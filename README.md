@@ -2,11 +2,10 @@
 
 - 脚本说明: Shadowsocks 一键安装脚本(四合一)
 - 系统支持: CentOS 6+，Debian 7+，Ubuntu 12+
-- 使用方法: https://teddysun.com/486.html
 
 ## 下载安装:
 ``` bash
-wget --no-check-certificate -O shadowsocks-all.sh https://raw.githubusercontent.com/heweiye/teddysunBackup/shadowsocks_install/master/shadowsocks-all.sh
+wget --no-check-certificate -O shadowsocks-all.sh https://raw.githubusercontent.com/Yuk1n0/Shadowsocks-Install/master/shadowsocks-all.sh
 chmod +x shadowsocks-all.sh
 ./shadowsocks-all.sh 2>&1 | tee shadowsocks-all.log
 ```
@@ -14,6 +13,9 @@ chmod +x shadowsocks-all.sh
 ``` bash
 ./shadowsocks-all.sh uninstall
 ```
+
+各版本启动|停止|重启|状态命令
+
 Shadowsocks-Python 版：
 /etc/init.d/shadowsocks-python start | stop | restart | status
 
@@ -27,6 +29,7 @@ Shadowsocks-libev 版：
 /etc/init.d/shadowsocks-libev start | stop | restart | status
 
 各版本默认配置文件
+
 Shadowsocks-Python 版：
 /etc/shadowsocks-python/config.json
 
