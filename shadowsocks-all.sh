@@ -593,6 +593,7 @@ install_select(){
     fi
 
     clear
+    get_libev_ver
     while true
     do
     echo  "Which Shadowsocks server you'd select:"
@@ -606,6 +607,9 @@ install_select(){
         1|2|3|4)
         echo
         echo "You choose = ${software[${selected}-1]}"
+        if  [ "${selected}" == "4" ]; then
+            echo -e "Current Shadowsocks_libev Version:${libev_ver}"
+        fi
         echo
         break
         ;;
