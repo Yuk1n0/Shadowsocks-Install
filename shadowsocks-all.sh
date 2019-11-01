@@ -4,7 +4,7 @@ export PATH
 #
 # Auto install Shadowsocks Server (all version)
 #
-# Copyright (C) 2016-2019 Teddysun <i@teddysun.com>
+# Copyright (C) 2016-2019 Teddysun <i@teddysun.com> Licensed: GPLv3
 #
 # System Required:  CentOS 6+, Debian7+, Ubuntu12+
 #
@@ -24,6 +24,7 @@ export PATH
 # @madeye     <https://github.com/madeye>
 # @linusyang  <https://github.com/linusyang>
 # @Akkariiin  <https://github.com/Akkariiin>
+# @teddysun   <https://github.com/teddysun>
 
 red='\033[0;31m'
 green='\033[0;32m'
@@ -86,9 +87,6 @@ camellia-256-cfb
 xchacha20-ietf-poly1305
 chacha20-ietf-poly1305
 chacha20-ietf
-chacha20
-salsa20
-rc4-md5
 )
 go_ciphers=(
 aes-256-cfb
@@ -98,9 +96,6 @@ aes-256-ctr
 aes-192-ctr
 aes-128-ctr
 chacha20-ietf
-chacha20
-salsa20
-rc4-md5
 )
 r_ciphers=(
 none
@@ -114,11 +109,6 @@ aes-256-ctr
 aes-192-ctr
 aes-128-ctr
 chacha20-ietf
-chacha20
-salsa20
-xchacha20
-xsalsa20
-rc4-md5
 )
 # Reference URL:
 # https://github.com/shadowsocksr-rm/shadowsocks-rss/blob/master/ssr.md

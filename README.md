@@ -42,7 +42,7 @@ Shadowsocks-Go 版：
 Shadowsocks-libev 版：
 /etc/shadowsocks-libev/config.json
 
-可选 16 种加密方式的其中之一（Python 和 libev 版）
+可选 14 种加密方式的其中之一（Python 和 libev 版）
 aes-256-gcm
 aes-192-gcm
 aes-128-gcm
@@ -57,10 +57,8 @@ camellia-192-cfb
 camellia-256-cfb
 chacha20-ietf-poly1305
 chacha20-ietf
-chacha20
-rc4-md5
 
-可选 9 种加密方式的其中之一（Go 版）
+可选 7 种加密方式的其中之一（Go 版）
 aes-256-cfb
 aes-192-cfb
 aes-128-cfb
@@ -68,26 +66,19 @@ aes-256-ctr
 aes-192-ctr
 aes-128-ctr
 chacha20-ietf
-chacha20
-rc4-md5
 
-可选 15 种加密方式的其中之一（none 是不加密，ShadowsocksR 版）
+可选 10 种加密方式的其中之一（none 是不加密，ShadowsocksR 版）
 none
 aes-256-cfb
 aes-192-cfb
 aes-128-cfb
-aes-256-cfb8
-aes-192-cfb8
-aes-128-cfb8
+aes-256-cfb
+aes-192-cfb
+aes-128-cfb
 aes-256-ctr
 aes-192-ctr
 aes-128-ctr
 chacha20-ietf
-chacha20
-salsa20
-xchacha20
-xsalsa20
-rc4-md5
 
 可选 7 种协议（protocol）的其中之一（仅限 ShadowsocksR 版）
 origin
