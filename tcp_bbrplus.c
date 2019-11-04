@@ -158,7 +158,6 @@ enum bbr_pacing_gain_phase {
     BBR_BW_PROBE_CRUISE = 2,
 };
 
-
 /* The pacing_gain values for the PROBE_BW gain cycle, to discover/share bw: */
 static const int bbr_pacing_gain[] = {
     BBR_UNIT * 5 / 4,   /* probe for more available bw */
@@ -281,7 +280,6 @@ static void bbr_drain_to_target_cycling(struct sock *sk,
     }
 }
 
-
 /* Return maximum extra acked in past k-2k round trips,
  * where k = bbr_extra_acked_win_rtts.
  */
@@ -290,7 +288,6 @@ static u16 bbr_extra_acked(const struct sock *sk)
     struct bbr *bbr = inet_csk_ca(sk);
     return max(bbr->extra_acked[0], bbr->extra_acked[1]);
 }
-
 
 /* Return the windowed max recent bandwidth sample, in pkts/uS << BW_SCALE. */
 u32 bbr_max_bw(const struct sock *sk)
@@ -494,7 +491,6 @@ static u32 bbr_ack_aggregation_cwnd(struct sock *sk)
     return aggr_cwnd;
 }
 
-
 /* An optimization in BBR to reduce losses: On the first round of recovery, we
  * follow the packet conservation principle: send P packets per P packets acked.
  * After that, we slow-start and send at most 2*P packets per P packets acked.
@@ -503,6 +499,7 @@ static u32 bbr_ack_aggregation_cwnd(struct sock *sk)
  *
  * TODO(ycheng/ncardwell): implement a rate-based approach.
  */
+
 static bool bbr_set_cwnd_to_recover_or_restore(
     struct sock *sk, const struct rate_sample *rs, u32 acked, u32 *new_cwnd)
 {
@@ -729,6 +726,7 @@ static void bbr_lt_bw_interval_done(struct sock *sk, u32 bw)
  * consistent throughput and high packet loss. If we think we're being policed,
  * set lt_bw to the "long-term" average delivery rate from those 2 intervals.
  */
+
 static void bbr_lt_bw_sampling(struct sock *sk, const struct rate_sample *rs)
 {
     struct tcp_sock *tp = tcp_sk(sk);
@@ -886,7 +884,6 @@ static void bbr_check_drain(struct sock *sk, const struct rate_sample *rs)
         tcp_packets_in_flight(tcp_sk(sk)) <= bbr_inflight(sk, bbr_max_bw(sk), BBR_UNIT))
         bbr_reset_probe_bw_mode(sk);  /* we estimate queue is drained */
 }
-
 
 /* Estimates the windowed max degree of ack aggregation.
  * This is used to provision extra in-flight data to keep sending during
