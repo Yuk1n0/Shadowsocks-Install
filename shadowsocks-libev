@@ -36,12 +36,12 @@ fi
 
 if [ ! -f $CONF ]; then
     echo "$NAME config file $CONF not found"
-     exit 1
+    exit 1
 fi
 
 check_running() {
     if [ -r $PID_FILE ]; then
-        read PID < $PID_FILE
+        read PID <$PID_FILE
         if [ -d "/proc/$PID" ]; then
             return 0
         else
@@ -56,10 +56,10 @@ check_running() {
 do_status() {
     check_running
     case $? in
-        0)
+    0)
         echo "$NAME (pid $PID) is running..."
         ;;
-        1|2)
+    1 | 2)
         echo "$NAME is stopped"
         RET_VAL=1
         ;;
@@ -98,10 +98,10 @@ do_restart() {
 }
 
 case "$1" in
-    start|stop|restart|status)
+start | stop | restart | status)
     do_$1
     ;;
-    *)
+*)
     echo "Usage: $0 { start | stop | restart | status }"
     RET_VAL=1
     ;;

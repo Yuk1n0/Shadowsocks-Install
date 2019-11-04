@@ -21,7 +21,7 @@ elif [ -f /etc/shadowsocks.json ]; then
 fi
 RETVAL=0
 
-check_running(){
+check_running() {
     PID=$(ps -ef | grep -v grep | grep -i "${DAEMON}" | awk '{print $2}')
     if [ -n "$PID" ]; then
         return 0
@@ -30,7 +30,7 @@ check_running(){
     fi
 }
 
-do_start(){
+do_start() {
     check_running
     if [ $? -eq 0 ]; then
         echo "$NAME (pid $PID) is already running..."
@@ -46,7 +46,7 @@ do_start(){
     fi
 }
 
-do_stop(){
+do_stop() {
     check_running
     if [ $? -eq 0 ]; then
         $DAEMON -c $CONF -d stop
@@ -62,7 +62,7 @@ do_stop(){
     fi
 }
 
-do_status(){
+do_status() {
     check_running
     if [ $? -eq 0 ]; then
         echo "$NAME (pid $PID) is running..."
@@ -72,17 +72,17 @@ do_status(){
     fi
 }
 
-do_restart(){
+do_restart() {
     do_stop
     sleep 0.5
     do_start
 }
 
 case "$1" in
-    start|stop|restart|status)
+start | stop | restart | status)
     do_$1
     ;;
-    *)
+*)
     echo "Usage: $0 { start | stop | restart | status }"
     RETVAL=1
     ;;
