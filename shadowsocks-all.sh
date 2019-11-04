@@ -33,7 +33,7 @@ plain='\033[0m'
 
 [[ $EUID -ne 0 ]] && echo -e "[${red}Error${plain}] This script must be run as root!" && exit 1
 
-cur_dir=$( pwd )
+cur_dir=$(pwd)
 software=(Shadowsocks-Python ShadowsocksR Shadowsocks-Go Shadowsocks-libev)
 
 libsodium_file="libsodium-1.0.18"
@@ -72,87 +72,87 @@ shadowsocks_libev_debian="https://raw.githubusercontent.com/Yuk1n0/Shadowsocks-I
 
 # Stream Ciphers
 common_ciphers=(
-aes-256-gcm
-aes-192-gcm
-aes-128-gcm
-aes-256-ctr
-aes-192-ctr
-aes-128-ctr
-aes-256-cfb
-aes-192-cfb
-aes-128-cfb
-camellia-128-cfb
-camellia-192-cfb
-camellia-256-cfb
-xchacha20-ietf-poly1305
-chacha20-ietf-poly1305
-chacha20-ietf
+    aes-256-gcm
+    aes-192-gcm
+    aes-128-gcm
+    aes-256-ctr
+    aes-192-ctr
+    aes-128-ctr
+    aes-256-cfb
+    aes-192-cfb
+    aes-128-cfb
+    camellia-128-cfb
+    camellia-192-cfb
+    camellia-256-cfb
+    xchacha20-ietf-poly1305
+    chacha20-ietf-poly1305
+    chacha20-ietf
 )
 go_ciphers=(
-aes-256-cfb
-aes-192-cfb
-aes-128-cfb
-aes-256-ctr
-aes-192-ctr
-aes-128-ctr
-chacha20-ietf
+    aes-256-cfb
+    aes-192-cfb
+    aes-128-cfb
+    aes-256-ctr
+    aes-192-ctr
+    aes-128-ctr
+    chacha20-ietf
 )
 r_ciphers=(
-none
-aes-256-cfb
-aes-192-cfb
-aes-128-cfb
-aes-256-cfb8
-aes-192-cfb8
-aes-128-cfb8
-aes-256-ctr
-aes-192-ctr
-aes-128-ctr
-chacha20-ietf
+    none
+    aes-256-cfb
+    aes-192-cfb
+    aes-128-cfb
+    aes-256-cfb8
+    aes-192-cfb8
+    aes-128-cfb8
+    aes-256-ctr
+    aes-192-ctr
+    aes-128-ctr
+    chacha20-ietf
 )
 # Reference URL:
 # https://github.com/shadowsocksr-rm/shadowsocks-rss/blob/master/ssr.md
 # https://github.com/shadowsocksrr/shadowsocksr/commit/a3cf0254508992b7126ab1151df0c2f10bf82680
 # Protocol
 protocols=(
-origin
-verify_deflate
-auth_sha1_v4
-auth_sha1_v4_compatible
-auth_aes128_md5
-auth_aes128_sha1
-auth_chain_a
-auth_chain_b
-auth_chain_c
-auth_chain_d
-auth_chain_e
-auth_chain_f
+    origin
+    verify_deflate
+    auth_sha1_v4
+    auth_sha1_v4_compatible
+    auth_aes128_md5
+    auth_aes128_sha1
+    auth_chain_a
+    auth_chain_b
+    auth_chain_c
+    auth_chain_d
+    auth_chain_e
+    auth_chain_f
 )
 # obfs
 obfs=(
-plain
-http_simple
-http_simple_compatible
-http_post
-http_post_compatible
-tls1.2_ticket_auth
-tls1.2_ticket_auth_compatible
-tls1.2_ticket_fastauth
-tls1.2_ticket_fastauth_compatible
+    plain
+    http_simple
+    http_simple_compatible
+    http_post
+    http_post_compatible
+    tls1.2_ticket_auth
+    tls1.2_ticket_auth_compatible
+    tls1.2_ticket_fastauth
+    tls1.2_ticket_fastauth_compatible
 )
 # libev obfuscating
 obfs_libev=(http tls)
 # initialization parameter
 libev_obfs=""
 
-disable_selinux(){
+disable_selinux() {
     if [ -s /etc/selinux/config ] && grep 'SELINUX=enforcing' /etc/selinux/config; then
         sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
         setenforce 0
     fi
 }
 
-check_sys(){
+check_sys() {
     local checkType=$1
     local value=$2
 
@@ -197,15 +197,15 @@ check_sys(){
     fi
 }
 
-version_ge(){
+version_ge() {
     test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1"
 }
 
-version_gt(){
+version_gt() {
     test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1"
 }
 
-check_kernel_version(){
+check_kernel_version() {
     local kernel_version=$(uname -r | cut -d- -f1)
     if version_gt ${kernel_version} 3.7.0; then
         return 0
@@ -214,7 +214,7 @@ check_kernel_version(){
     fi
 }
 
-check_kernel_headers(){
+check_kernel_headers() {
     if check_sys packageManager yum; then
         if rpm -qa | grep -q headers-$(uname -r); then
             return 0
@@ -222,7 +222,7 @@ check_kernel_headers(){
             return 1
         fi
     elif check_sys packageManager apt; then
-        if dpkg -s linux-headers-$(uname -r) > /dev/null 2>&1; then
+        if dpkg -s linux-headers-$(uname -r) >/dev/null 2>&1; then
             return 0
         else
             return 1
@@ -231,15 +231,15 @@ check_kernel_headers(){
     return 1
 }
 
-getversion(){
+getversion() {
     if [[ -s /etc/redhat-release ]]; then
-        grep -oE  "[0-9.]+" /etc/redhat-release
+        grep -oE "[0-9.]+" /etc/redhat-release
     else
-        grep -oE  "[0-9.]+" /etc/issue
+        grep -oE "[0-9.]+" /etc/issue
     fi
 }
 
-centosversion(){
+centosversion() {
     if check_sys sysRelease centos; then
         local code=$1
         local version="$(getversion)"
@@ -254,14 +254,14 @@ centosversion(){
     fi
 }
 
-autoconf_version(){
+autoconf_version() {
     if [ ! "$(command -v autoconf)" ]; then
         echo -e "[${green}Info${plain}] Starting install package autoconf"
         if check_sys packageManager yum; then
-            yum install -y autoconf > /dev/null 2>&1 || echo -e "[${red}Error:${plain}] Failed to install autoconf"
+            yum install -y autoconf >/dev/null 2>&1 || echo -e "[${red}Error:${plain}] Failed to install autoconf"
         elif check_sys packageManager apt; then
-            apt-get -y update > /dev/null 2>&1
-            apt-get -y install autoconf > /dev/null 2>&1 || echo -e "[${red}Error:${plain}] Failed to install autoconf"
+            apt-get -y update >/dev/null 2>&1
+            apt-get -y install autoconf >/dev/null 2>&1 || echo -e "[${red}Error:${plain}] Failed to install autoconf"
         fi
     fi
     local autoconf_ver=$(autoconf --version | grep autoconf | grep -oE "[0-9.]+")
@@ -272,43 +272,43 @@ autoconf_version(){
     fi
 }
 
-get_ip(){
-    local IP=$( ip addr | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | egrep -v "^192\.168|^172\.1[6-9]\.|^172\.2[0-9]\.|^172\.3[0-2]\.|^10\.|^127\.|^255\.|^0\." | head -n 1 )
-    [ -z ${IP} ] && IP=$( wget -qO- -t1 -T2 ipv4.icanhazip.com )
-    [ -z ${IP} ] && IP=$( wget -qO- -t1 -T2 ipinfo.io/ip )
+get_ip() {
+    local IP=$(ip addr | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | egrep -v "^192\.168|^172\.1[6-9]\.|^172\.2[0-9]\.|^172\.3[0-2]\.|^10\.|^127\.|^255\.|^0\." | head -n 1)
+    [ -z ${IP} ] && IP=$(wget -qO- -t1 -T2 ipv4.icanhazip.com)
+    [ -z ${IP} ] && IP=$(wget -qO- -t1 -T2 ipinfo.io/ip)
     echo ${IP}
 }
 
-get_ipv6(){
+get_ipv6() {
     local ipv6=$(wget -qO- -t1 -T2 ipv6.icanhazip.com)
     [ -z ${ipv6} ] && return 1 || return 0
 }
 
-get_libev_ver(){
+get_libev_ver() {
     libev_ver=$(wget --no-check-certificate -qO- https://api.github.com/repos/shadowsocks/shadowsocks-libev/releases/latest | grep 'tag_name' | cut -d\" -f4)
     [ -z ${libev_ver} ] && echo -e "[${red}Error${plain}] Get shadowsocks-libev latest version failed" && exit 1
 }
 
-get_opsy(){
+get_opsy() {
     [ -f /etc/redhat-release ] && awk '{print ($1,$3~/^[0-9]/?$3:$4)}' /etc/redhat-release && return
     [ -f /etc/os-release ] && awk -F'[= "]' '/PRETTY_NAME/{print $3,$4,$5}' /etc/os-release && return
     [ -f /etc/lsb-release ] && awk -F'[="]+' '/DESCRIPTION/{print $2}' /etc/lsb-release && return
 }
 
-is_64bit(){
-    if [ `getconf WORD_BIT` = '32' ] && [ `getconf LONG_BIT` = '64' ] ; then
+is_64bit() {
+    if [ $(getconf WORD_BIT) = '32' ] && [ $(getconf LONG_BIT) = '64' ]; then
         return 0
     else
         return 1
     fi
 }
 
-debianversion(){
-    if check_sys sysRelease debian;then
-        local version=$( get_opsy )
+debianversion() {
+    if check_sys sysRelease debian; then
+        local version=$(get_opsy)
         local code=${1}
-        local main_ver=$( echo ${version} | sed 's/[^0-9]//g')
-        if [ "${main_ver}" == "${code}" ];then
+        local main_ver=$(echo ${version} | sed 's/[^0-9]//g')
+        if [ "${main_ver}" == "${code}" ]; then
             return 0
         else
             return 1
@@ -318,7 +318,7 @@ debianversion(){
     fi
 }
 
-download(){
+download() {
     local filename=$(basename $1)
     if [ -f ${1} ]; then
         echo "${filename} [found]"
@@ -332,10 +332,10 @@ download(){
     fi
 }
 
-download_files(){
+download_files() {
     cd ${cur_dir}
 
-    if   [ "${selected}" == "1" ]; then
+    if [ "${selected}" == "1" ]; then
         download "${shadowsocks_python_file}.zip" "${shadowsocks_python_url}"
         if check_sys packageManager yum; then
             download "${shadowsocks_python_init}" "${shadowsocks_python_centos}"
@@ -375,32 +375,32 @@ download_files(){
 
 }
 
-get_char(){
+get_char() {
     SAVEDSTTY=$(stty -g)
     stty -echo
     stty cbreak
-    dd if=/dev/tty bs=1 count=1 2> /dev/null
+    dd if=/dev/tty bs=1 count=1 2>/dev/null
     stty -raw
     stty echo
     stty $SAVEDSTTY
 }
 
-error_detect_depends(){
+error_detect_depends() {
     local command=$1
-    local depend=`echo "${command}" | awk '{print $4}'`
+    local depend=$(echo "${command}" | awk '{print $4}')
     echo -e "[${green}Info${plain}] Starting to install package ${depend}"
-    ${command} > /dev/null 2>&1
+    ${command} >/dev/null 2>&1
     if [ $? -ne 0 ]; then
         echo -e "[${red}Error${plain}] Failed to install ${red}${depend}${plain}"
         exit 1
     fi
 }
 
-config_firewall(){
+config_firewall() {
     if centosversion 6; then
-        /etc/init.d/iptables status > /dev/null 2>&1
+        /etc/init.d/iptables status >/dev/null 2>&1
         if [ $? -eq 0 ]; then
-            iptables -L -n | grep -i ${shadowsocksport} > /dev/null 2>&1
+            iptables -L -n | grep -i ${shadowsocksport} >/dev/null 2>&1
             if [ $? -ne 0 ]; then
                 iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport ${shadowsocksport} -j ACCEPT
                 iptables -I INPUT -m state --state NEW -m udp -p udp --dport ${shadowsocksport} -j ACCEPT
@@ -413,7 +413,7 @@ config_firewall(){
             echo -e "[${yellow}Warning${plain}] iptables looks like not running or not installed, please enable port ${shadowsocksport} manually if necessary."
         fi
     elif centosversion 7; then
-        systemctl status firewalld > /dev/null 2>&1
+        systemctl status firewalld >/dev/null 2>&1
         if [ $? -eq 0 ]; then
             default_zone=$(firewall-cmd --get-default-zone)
             firewall-cmd --permanent --zone=${default_zone} --add-port=${shadowsocksport}/tcp
@@ -425,19 +425,19 @@ config_firewall(){
     fi
 }
 
-config_shadowsocks(){
+config_shadowsocks() {
 
-if check_kernel_version && check_kernel_headers; then
-    fast_open="true"
-else
-    fast_open="false"
-fi
-
-if   [ "${selected}" == "1" ]; then
-    if [ ! -d "$(dirname ${shadowsocks_python_config})" ]; then
-        mkdir -p $(dirname ${shadowsocks_python_config})
+    if check_kernel_version && check_kernel_headers; then
+        fast_open="true"
+    else
+        fast_open="false"
     fi
-    cat > ${shadowsocks_python_config}<<-EOF
+
+    if [ "${selected}" == "1" ]; then
+        if [ ! -d "$(dirname ${shadowsocks_python_config})" ]; then
+            mkdir -p $(dirname ${shadowsocks_python_config})
+        fi
+        cat >${shadowsocks_python_config} <<-EOF
 {
     "server":"0.0.0.0",
     "server_port":${shadowsocksport},
@@ -449,11 +449,11 @@ if   [ "${selected}" == "1" ]; then
     "fast_open":${fast_open}
 }
 EOF
-elif [ "${selected}" == "2" ]; then
-    if [ ! -d "$(dirname ${shadowsocks_r_config})" ]; then
-        mkdir -p $(dirname ${shadowsocks_r_config})
-    fi
-    cat > ${shadowsocks_r_config}<<-EOF
+    elif [ "${selected}" == "2" ]; then
+        if [ ! -d "$(dirname ${shadowsocks_r_config})" ]; then
+            mkdir -p $(dirname ${shadowsocks_r_config})
+        fi
+        cat >${shadowsocks_r_config} <<-EOF
 {
     "server":"0.0.0.0",
     "server_ipv6":"::",
@@ -473,11 +473,11 @@ elif [ "${selected}" == "2" ]; then
     "workers":1
 }
 EOF
-elif [ "${selected}" == "3" ]; then
-    if [ ! -d "$(dirname ${shadowsocks_go_config})" ]; then
-        mkdir -p $(dirname ${shadowsocks_go_config})
-    fi
-    cat > ${shadowsocks_go_config}<<-EOF
+    elif [ "${selected}" == "3" ]; then
+        if [ ! -d "$(dirname ${shadowsocks_go_config})" ]; then
+            mkdir -p $(dirname ${shadowsocks_go_config})
+        fi
+        cat >${shadowsocks_go_config} <<-EOF
 {
     "server":"0.0.0.0",
     "server_port":${shadowsocksport},
@@ -487,18 +487,18 @@ elif [ "${selected}" == "3" ]; then
     "timeout":300
 }
 EOF
-elif [ "${selected}" == "4" ]; then
-    local server_value="\"0.0.0.0\""
-    if get_ipv6; then
-        server_value="[\"[::0]\",\"0.0.0.0\"]"
-    fi
+    elif [ "${selected}" == "4" ]; then
+        local server_value="\"0.0.0.0\""
+        if get_ipv6; then
+            server_value="[\"[::0]\",\"0.0.0.0\"]"
+        fi
 
-    if [ ! -d "$(dirname ${shadowsocks_libev_config})" ]; then
-        mkdir -p $(dirname ${shadowsocks_libev_config})
-    fi
+        if [ ! -d "$(dirname ${shadowsocks_libev_config})" ]; then
+            mkdir -p $(dirname ${shadowsocks_libev_config})
+        fi
 
-    if [ "${libev_obfs}" == "y" ] || [ "${libev_obfs}" == "Y" ]; then
-        cat > ${shadowsocks_libev_config}<<-EOF
+        if [ "${libev_obfs}" == "y" ] || [ "${libev_obfs}" == "Y" ]; then
+            cat >${shadowsocks_libev_config} <<-EOF
 {
     "server":${server_value},
     "server_port":${shadowsocksport},
@@ -513,8 +513,8 @@ elif [ "${selected}" == "4" ]; then
     "plugin_opts":"obfs=${shadowsocklibev_obfs}"
 }
 EOF
-    else
-        cat > ${shadowsocks_libev_config}<<-EOF
+        else
+            cat >${shadowsocks_libev_config} <<-EOF
 {
     "server":${server_value},
     "server_port":${shadowsocksport},
@@ -527,20 +527,20 @@ EOF
     "mode":"tcp_and_udp"
 }
 EOF
-    fi
+        fi
 
-fi
+    fi
 }
 
-install_dependencies(){
+install_dependencies() {
     if check_sys packageManager yum; then
         echo -e "[${green}Info${plain}] Checking the EPEL repository..."
         if [ ! -f /etc/yum.repos.d/epel.repo ]; then
-            yum install -y epel-release > /dev/null 2>&1
+            yum install -y epel-release >/dev/null 2>&1
         fi
         [ ! -f /etc/yum.repos.d/epel.repo ] && echo -e "[${red}Error${plain}] Install EPEL repository failed, please check it." && exit 1
-        [ ! "$(command -v yum-config-manager)" ] && yum install -y yum-utils > /dev/null 2>&1
-        [ x"$(yum-config-manager epel | grep -w enabled | awk '{print $3}')" != x"True" ] && yum-config-manager --enable epel > /dev/null 2>&1
+        [ ! "$(command -v yum-config-manager)" ] && yum install -y yum-utils >/dev/null 2>&1
+        [ x"$(yum-config-manager epel | grep -w enabled | awk '{print $3}')" != x"True" ] && yum-config-manager --enable epel >/dev/null 2>&1
         echo -e "[${green}Info${plain}] Checking the EPEL repository complete..."
 
         yum_depends=(
@@ -564,7 +564,7 @@ install_dependencies(){
     fi
 }
 
-install_check(){
+install_check() {
     if check_sys packageManager yum || check_sys packageManager apt; then
         if centosversion 5; then
             return 1
@@ -575,7 +575,7 @@ install_check(){
     fi
 }
 
-install_select(){
+install_select() {
     if ! install_check; then
         echo -e "[${red}Error${plain}] Your OS is not supported to run it!"
         echo "Please change to CentOS 6+/Debian 7+/Ubuntu 12+ and try again."
@@ -584,34 +584,33 @@ install_select(){
 
     clear
     get_libev_ver
-    while true
-    do
-    echo  "Which Shadowsocks server you'd select:"
-    for ((i=1;i<=${#software[@]};i++ )); do
-        hint="${software[$i-1]}"
-        echo -e "${green}${i}${plain}) ${hint}"
-    done
-    read -p "Please enter a number (Default ${software[3]}):" selected
-    [ -z "${selected}" ] && selected="4"
-    case "${selected}" in
-        1|2|3|4)
-        echo
-        echo "You choose = ${software[${selected}-1]}"
-        if  [ "${selected}" == "4" ]; then
-            echo -e "Current Shadowsocks_libev Version:${libev_ver}"
-        fi
-        echo
-        break
-        ;;
+    while true; do
+        echo "Which Shadowsocks server you'd select:"
+        for ((i = 1; i <= ${#software[@]}; i++)); do
+            hint="${software[$i - 1]}"
+            echo -e "${green}${i}${plain}) ${hint}"
+        done
+        read -p "Please enter a number (Default ${software[3]}):" selected
+        [ -z "${selected}" ] && selected="4"
+        case "${selected}" in
+        1 | 2 | 3 | 4)
+            echo
+            echo "You choose = ${software[${selected} - 1]}"
+            if [ "${selected}" == "4" ]; then
+                echo -e "Current Shadowsocks_libev Version:${libev_ver}"
+            fi
+            echo
+            break
+            ;;
         *)
-        echo -e "[${red}Error${plain}] Please only enter a number [1-4]"
-        ;;
-    esac
+            echo -e "[${red}Error${plain}] Please only enter a number [1-4]"
+            ;;
+        esac
     done
 }
 
-install_prepare_password(){
-    echo "Please enter password for ${software[${selected}-1]}"
+install_prepare_password() {
+    echo "Please enter password for ${software[${selected} - 1]}"
     read -p "(Default password: teddysun.com):" shadowsockspwd
     [ -z "${shadowsockspwd}" ] && shadowsockspwd="teddysun.com"
     echo
@@ -620,198 +619,192 @@ install_prepare_password(){
 }
 
 install_prepare_port() {
-    while true
-    do
-    dport=$(shuf -i 9000-19999 -n 1)
-    echo -e "Please enter a port for ${software[${selected}-1]} [1-65535]"
-    read -p "(Default port: ${dport}):" shadowsocksport
-    [ -z "${shadowsocksport}" ] && shadowsocksport=${dport}
-    expr ${shadowsocksport} + 1 &>/dev/null
-    if [ $? -eq 0 ]; then
-        if [ ${shadowsocksport} -ge 1 ] && [ ${shadowsocksport} -le 65535 ] && [ ${shadowsocksport:0:1} != 0 ]; then
-            echo
-            echo "port = ${shadowsocksport}"
-            echo
-            break
+    while true; do
+        dport=$(shuf -i 9000-19999 -n 1)
+        echo -e "Please enter a port for ${software[${selected} - 1]} [1-65535]"
+        read -p "(Default port: ${dport}):" shadowsocksport
+        [ -z "${shadowsocksport}" ] && shadowsocksport=${dport}
+        expr ${shadowsocksport} + 1 &>/dev/null
+        if [ $? -eq 0 ]; then
+            if [ ${shadowsocksport} -ge 1 ] && [ ${shadowsocksport} -le 65535 ] && [ ${shadowsocksport:0:1} != 0 ]; then
+                echo
+                echo "port = ${shadowsocksport}"
+                echo
+                break
+            fi
         fi
-    fi
-    echo -e "[${red}Error${plain}] Please enter a correct number [1-65535]"
+        echo -e "[${red}Error${plain}] Please enter a correct number [1-65535]"
     done
 }
 
-install_prepare_cipher(){
-    while true
-    do
-    echo -e "Please select stream cipher for ${software[${selected}-1]}:"
+install_prepare_cipher() {
+    while true; do
+        echo -e "Please select stream cipher for ${software[${selected} - 1]}:"
 
-    if   [[ "${selected}" == "1" || "${selected}" == "4" ]]; then
-        for ((i=1;i<=${#common_ciphers[@]};i++ )); do
-            hint="${common_ciphers[$i-1]}"
-            echo -e "${green}${i}${plain}) ${hint}"
-        done
-        read -p "Which cipher you'd select(Default: ${common_ciphers[0]}):" pick
-        [ -z "$pick" ] && pick=1
-        expr ${pick} + 1 &>/dev/null
-        if [ $? -ne 0 ]; then
-            echo -e "[${red}Error${plain}] Please enter a number"
-            continue
-        fi
-        if [[ "$pick" -lt 1 || "$pick" -gt ${#common_ciphers[@]} ]]; then
-            echo -e "[${red}Error${plain}] Please enter a number between 1 and ${#common_ciphers[@]}"
-            continue
-        fi
-        shadowsockscipher=${common_ciphers[$pick-1]}
-    elif [ "${selected}" == "2" ]; then
-        for ((i=1;i<=${#r_ciphers[@]};i++ )); do
-            hint="${r_ciphers[$i-1]}"
-            echo -e "${green}${i}${plain}) ${hint}"
-        done
-        read -p "Which cipher you'd select(Default: ${r_ciphers[1]}):" pick
-        [ -z "$pick" ] && pick=2
-        expr ${pick} + 1 &>/dev/null
-        if [ $? -ne 0 ]; then
-            echo -e "[${red}Error${plain}] Please enter a number"
-            continue
-        fi
-        if [[ "$pick" -lt 1 || "$pick" -gt ${#r_ciphers[@]} ]]; then
-            echo -e "[${red}Error${plain}] Please enter a number between 1 and ${#r_ciphers[@]}"
-            continue
-        fi
-        shadowsockscipher=${r_ciphers[$pick-1]}
-    elif [ "${selected}" == "3" ]; then
-        for ((i=1;i<=${#go_ciphers[@]};i++ )); do
-            hint="${go_ciphers[$i-1]}"
-            echo -e "${green}${i}${plain}) ${hint}"
-        done
-        read -p "Which cipher you'd select(Default: ${go_ciphers[0]}):" pick
-        [ -z "$pick" ] && pick=1
-        expr ${pick} + 1 &>/dev/null
-        if [ $? -ne 0 ]; then
-            echo -e "[${red}Error${plain}] Please enter a number"
-            continue
-        fi
-        if [[ "$pick" -lt 1 || "$pick" -gt ${#go_ciphers[@]} ]]; then
-            echo -e "[${red}Error${plain}] Please enter a number between 1 and ${#go_ciphers[@]}"
-            continue
-        fi
-        shadowsockscipher=${go_ciphers[$pick-1]}
-    fi
-
-    echo
-    echo "cipher = ${shadowsockscipher}"
-    echo
-    break
-    done
-}
-
-install_prepare_protocol(){
-    while true
-    do
-    echo -e "Please select protocol for ${software[${selected}-1]}:"
-    for ((i=1;i<=${#protocols[@]};i++ )); do
-        hint="${protocols[$i-1]}"
-        echo -e "${green}${i}${plain}) ${hint}"
-    done
-    read -p "Which protocol you'd select(Default: ${protocols[0]}):" protocol
-    [ -z "$protocol" ] && protocol=1
-    expr ${protocol} + 1 &>/dev/null
-    if [ $? -ne 0 ]; then
-        echo -e "[${red}Error${plain}] Please enter a number"
-        continue
-    fi
-    if [[ "$protocol" -lt 1 || "$protocol" -gt ${#protocols[@]} ]]; then
-        echo -e "[${red}Error${plain}] Please enter a number between 1 and ${#protocols[@]}"
-        continue
-    fi
-    shadowsockprotocol=${protocols[$protocol-1]}
-    echo
-    echo "protocol = ${shadowsockprotocol}"
-    echo
-    break
-    done
-}
-
-install_prepare_obfs(){
-    while true
-    do
-    echo -e "Please select obfs for ${software[${selected}-1]}:"
-    for ((i=1;i<=${#obfs[@]};i++ )); do
-        hint="${obfs[$i-1]}"
-        echo -e "${green}${i}${plain}) ${hint}"
-    done
-    read -p "Which obfs you'd select(Default: ${obfs[0]}):" r_obfs
-    [ -z "$r_obfs" ] && r_obfs=1
-    expr ${r_obfs} + 1 &>/dev/null
-    if [ $? -ne 0 ]; then
-        echo -e "[${red}Error${plain}] Please enter a number"
-        continue
-    fi
-    if [[ "$r_obfs" -lt 1 || "$r_obfs" -gt ${#obfs[@]} ]]; then
-        echo -e "[${red}Error${plain}] Please enter a number between 1 and ${#obfs[@]}"
-        continue
-    fi
-    shadowsockobfs=${obfs[$r_obfs-1]}
-    echo
-    echo "obfs = ${shadowsockobfs}"
-    echo
-    break
-    done
-}
-
-install_prepare_libev_obfs(){
-    if autoconf_version || centosversion 6; then
-        while true
-        do
-        echo -e "Do you want install simple-obfs for ${software[${selected}-1]}? [y/n]"
-        read -p "(default: n):" libev_obfs
-        [ -z "$libev_obfs" ] && libev_obfs=n
-        case "${libev_obfs}" in
-            y|Y|n|N)
-            echo
-            echo "You choose = ${libev_obfs}"
-            echo
-            break
-            ;;
-            *)
-            echo -e "[${red}Error${plain}] Please only enter [y/n]"
-            ;;
-        esac
-        done
-
-        if [ "${libev_obfs}" == "y" ] || [ "${libev_obfs}" == "Y" ]; then
-            while true
-            do
-            echo -e "Please select obfs for simple-obfs:"
-            for ((i=1;i<=${#obfs_libev[@]};i++ )); do
-                hint="${obfs_libev[$i-1]}"
+        if [[ "${selected}" == "1" || "${selected}" == "4" ]]; then
+            for ((i = 1; i <= ${#common_ciphers[@]}; i++)); do
+                hint="${common_ciphers[$i - 1]}"
                 echo -e "${green}${i}${plain}) ${hint}"
             done
-            read -p "Which obfs you'd select(Default: ${obfs_libev[0]}):" r_libev_obfs
-            [ -z "$r_libev_obfs" ] && r_libev_obfs=1
-            expr ${r_libev_obfs} + 1 &>/dev/null
+            read -p "Which cipher you'd select(Default: ${common_ciphers[0]}):" pick
+            [ -z "$pick" ] && pick=1
+            expr ${pick} + 1 &>/dev/null
             if [ $? -ne 0 ]; then
                 echo -e "[${red}Error${plain}] Please enter a number"
                 continue
             fi
-            if [[ "$r_libev_obfs" -lt 1 || "$r_libev_obfs" -gt ${#obfs_libev[@]} ]]; then
-                echo -e "[${red}Error${plain}] Please enter a number between 1 and ${#obfs_libev[@]}"
+            if [[ "$pick" -lt 1 || "$pick" -gt ${#common_ciphers[@]} ]]; then
+                echo -e "[${red}Error${plain}] Please enter a number between 1 and ${#common_ciphers[@]}"
                 continue
             fi
-            shadowsocklibev_obfs=${obfs_libev[$r_libev_obfs-1]}
-            echo
-            echo "obfs = ${shadowsocklibev_obfs}"
-            echo
-            break
+            shadowsockscipher=${common_ciphers[$pick - 1]}
+        elif [ "${selected}" == "2" ]; then
+            for ((i = 1; i <= ${#r_ciphers[@]}; i++)); do
+                hint="${r_ciphers[$i - 1]}"
+                echo -e "${green}${i}${plain}) ${hint}"
+            done
+            read -p "Which cipher you'd select(Default: ${r_ciphers[1]}):" pick
+            [ -z "$pick" ] && pick=2
+            expr ${pick} + 1 &>/dev/null
+            if [ $? -ne 0 ]; then
+                echo -e "[${red}Error${plain}] Please enter a number"
+                continue
+            fi
+            if [[ "$pick" -lt 1 || "$pick" -gt ${#r_ciphers[@]} ]]; then
+                echo -e "[${red}Error${plain}] Please enter a number between 1 and ${#r_ciphers[@]}"
+                continue
+            fi
+            shadowsockscipher=${r_ciphers[$pick - 1]}
+        elif [ "${selected}" == "3" ]; then
+            for ((i = 1; i <= ${#go_ciphers[@]}; i++)); do
+                hint="${go_ciphers[$i - 1]}"
+                echo -e "${green}${i}${plain}) ${hint}"
+            done
+            read -p "Which cipher you'd select(Default: ${go_ciphers[0]}):" pick
+            [ -z "$pick" ] && pick=1
+            expr ${pick} + 1 &>/dev/null
+            if [ $? -ne 0 ]; then
+                echo -e "[${red}Error${plain}] Please enter a number"
+                continue
+            fi
+            if [[ "$pick" -lt 1 || "$pick" -gt ${#go_ciphers[@]} ]]; then
+                echo -e "[${red}Error${plain}] Please enter a number between 1 and ${#go_ciphers[@]}"
+                continue
+            fi
+            shadowsockscipher=${go_ciphers[$pick - 1]}
+        fi
+
+        echo
+        echo "cipher = ${shadowsockscipher}"
+        echo
+        break
+    done
+}
+
+install_prepare_protocol() {
+    while true; do
+        echo -e "Please select protocol for ${software[${selected} - 1]}:"
+        for ((i = 1; i <= ${#protocols[@]}; i++)); do
+            hint="${protocols[$i - 1]}"
+            echo -e "${green}${i}${plain}) ${hint}"
+        done
+        read -p "Which protocol you'd select(Default: ${protocols[0]}):" protocol
+        [ -z "$protocol" ] && protocol=1
+        expr ${protocol} + 1 &>/dev/null
+        if [ $? -ne 0 ]; then
+            echo -e "[${red}Error${plain}] Please enter a number"
+            continue
+        fi
+        if [[ "$protocol" -lt 1 || "$protocol" -gt ${#protocols[@]} ]]; then
+            echo -e "[${red}Error${plain}] Please enter a number between 1 and ${#protocols[@]}"
+            continue
+        fi
+        shadowsockprotocol=${protocols[$protocol - 1]}
+        echo
+        echo "protocol = ${shadowsockprotocol}"
+        echo
+        break
+    done
+}
+
+install_prepare_obfs() {
+    while true; do
+        echo -e "Please select obfs for ${software[${selected} - 1]}:"
+        for ((i = 1; i <= ${#obfs[@]}; i++)); do
+            hint="${obfs[$i - 1]}"
+            echo -e "${green}${i}${plain}) ${hint}"
+        done
+        read -p "Which obfs you'd select(Default: ${obfs[0]}):" r_obfs
+        [ -z "$r_obfs" ] && r_obfs=1
+        expr ${r_obfs} + 1 &>/dev/null
+        if [ $? -ne 0 ]; then
+            echo -e "[${red}Error${plain}] Please enter a number"
+            continue
+        fi
+        if [[ "$r_obfs" -lt 1 || "$r_obfs" -gt ${#obfs[@]} ]]; then
+            echo -e "[${red}Error${plain}] Please enter a number between 1 and ${#obfs[@]}"
+            continue
+        fi
+        shadowsockobfs=${obfs[$r_obfs - 1]}
+        echo
+        echo "obfs = ${shadowsockobfs}"
+        echo
+        break
+    done
+}
+
+install_prepare_libev_obfs() {
+    if autoconf_version || centosversion 6; then
+        while true; do
+            echo -e "Do you want install simple-obfs for ${software[${selected} - 1]}? [y/n]"
+            read -p "(default: n):" libev_obfs
+            [ -z "$libev_obfs" ] && libev_obfs=n
+            case "${libev_obfs}" in
+            y | Y | n | N)
+                echo
+                echo "You choose = ${libev_obfs}"
+                echo
+                break
+                ;;
+            *)
+                echo -e "[${red}Error${plain}] Please only enter [y/n]"
+                ;;
+            esac
+        done
+
+        if [ "${libev_obfs}" == "y" ] || [ "${libev_obfs}" == "Y" ]; then
+            while true; do
+                echo -e "Please select obfs for simple-obfs:"
+                for ((i = 1; i <= ${#obfs_libev[@]}; i++)); do
+                    hint="${obfs_libev[$i - 1]}"
+                    echo -e "${green}${i}${plain}) ${hint}"
+                done
+                read -p "Which obfs you'd select(Default: ${obfs_libev[0]}):" r_libev_obfs
+                [ -z "$r_libev_obfs" ] && r_libev_obfs=1
+                expr ${r_libev_obfs} + 1 &>/dev/null
+                if [ $? -ne 0 ]; then
+                    echo -e "[${red}Error${plain}] Please enter a number"
+                    continue
+                fi
+                if [[ "$r_libev_obfs" -lt 1 || "$r_libev_obfs" -gt ${#obfs_libev[@]} ]]; then
+                    echo -e "[${red}Error${plain}] Please enter a number between 1 and ${#obfs_libev[@]}"
+                    continue
+                fi
+                shadowsocklibev_obfs=${obfs_libev[$r_libev_obfs - 1]}
+                echo
+                echo "obfs = ${shadowsocklibev_obfs}"
+                echo
+                break
             done
         fi
     else
-        echo -e "[${green}Info${plain}] autoconf version is less than 2.67, simple-obfs for ${software[${selected}-1]} installation has been skipped"
+        echo -e "[${green}Info${plain}] autoconf version is less than 2.67, simple-obfs for ${software[${selected} - 1]} installation has been skipped"
     fi
 }
 
-install_prepare(){
+install_prepare() {
 
-    if  [[ "${selected}" == "1" || "${selected}" == "3" || "${selected}" == "4" ]]; then
+    if [[ "${selected}" == "1" || "${selected}" == "3" || "${selected}" == "4" ]]; then
         install_prepare_password
         install_prepare_port
         install_prepare_cipher
@@ -828,11 +821,11 @@ install_prepare(){
 
     echo
     echo "Press any key to start...or Press Ctrl+C to cancel"
-    char=`get_char`
+    char=$(get_char)
 
 }
 
-install_libsodium(){
+install_libsodium() {
     if [ ! -f /usr/lib/libsodium.a ]; then
         cd ${cur_dir}
         download "${libsodium_file}.tar.gz" "${libsodium_url}"
@@ -849,7 +842,7 @@ install_libsodium(){
     fi
 }
 
-install_mbedtls(){
+install_mbedtls() {
     if [ ! -f /usr/lib/libmbedtls.a ]; then
         cd ${cur_dir}
         download "${mbedtls_file}-gpl.tgz" "${mbedtls_url}"
@@ -867,10 +860,10 @@ install_mbedtls(){
     fi
 }
 
-install_shadowsocks_python(){
+install_shadowsocks_python() {
     cd ${cur_dir}
     unzip -q ${shadowsocks_python_file}.zip
-    if [ $? -ne 0 ];then
+    if [ $? -ne 0 ]; then
         echo -e "[${red}Error${plain}] unzip ${shadowsocks_python_file}.zip failed, please check unzip command."
         install_cleanup
         exit 1
@@ -896,7 +889,7 @@ install_shadowsocks_python(){
     fi
 }
 
-install_shadowsocks_r(){
+install_shadowsocks_r() {
     cd ${cur_dir}
     tar zxf ${shadowsocks_r_file}.tar.gz
     mv ${shadowsocks_r_file}/shadowsocks /usr/local/
@@ -917,11 +910,11 @@ install_shadowsocks_r(){
     fi
 }
 
-install_shadowsocks_go(){
+install_shadowsocks_go() {
     cd ${cur_dir}
     if is_64bit; then
         gzip -d ${shadowsocks_go_file_64}.gz
-        if [ $? -ne 0 ];then
+        if [ $? -ne 0 ]; then
             echo -e "[${red}Error${plain}] Decompress ${shadowsocks_go_file_64}.gz failed."
             install_cleanup
             exit 1
@@ -929,7 +922,7 @@ install_shadowsocks_go(){
         mv -f ${shadowsocks_go_file_64} /usr/bin/shadowsocks-server
     else
         gzip -d ${shadowsocks_go_file_32}.gz
-        if [ $? -ne 0 ];then
+        if [ $? -ne 0 ]; then
             echo -e "[${red}Error${plain}] Decompress ${shadowsocks_go_file_32}.gz failed."
             install_cleanup
             exit 1
@@ -956,7 +949,7 @@ install_shadowsocks_go(){
     fi
 }
 
-install_shadowsocks_libev(){
+install_shadowsocks_libev() {
     cd ${cur_dir}
     tar zxf ${shadowsocks_libev_file}.tar.gz
     cd ${shadowsocks_libev_file}
@@ -978,7 +971,7 @@ install_shadowsocks_libev(){
     fi
 }
 
-install_shadowsocks_libev_obfs(){
+install_shadowsocks_libev_obfs() {
     if [ "${libev_obfs}" == "y" ] || [ "${libev_obfs}" == "Y" ]; then
         cd ${cur_dir}
         git clone https://github.com/shadowsocks/simple-obfs.git
@@ -987,7 +980,7 @@ install_shadowsocks_libev_obfs(){
         if centosversion 6; then
             if [ ! "$(command -v autoconf268)" ]; then
                 echo -e "[${green}Info${plain}] Starting install autoconf268..."
-                yum install -y autoconf268 > /dev/null 2>&1 || echo -e "[${red}Error:${plain}] Failed to install autoconf268."
+                yum install -y autoconf268 >/dev/null 2>&1 || echo -e "[${red}Error:${plain}] Failed to install autoconf268."
             fi
             # replace command autoreconf to autoreconf268
             sed -i 's/autoreconf/autoreconf268/' autogen.sh
@@ -1000,7 +993,7 @@ install_shadowsocks_libev_obfs(){
         make
         make install
         if [ ! "$(command -v obfs-server)" ]; then
-            echo -e "[${red}Error${plain}] simple-obfs for ${software[${selected}-1]} install failed."
+            echo -e "[${red}Error${plain}] simple-obfs for ${software[${selected} - 1]} install failed."
             install_cleanup
             exit 1
         fi
@@ -1008,7 +1001,7 @@ install_shadowsocks_libev_obfs(){
     fi
 }
 
-install_completed_python(){
+install_completed_python() {
     clear
     ${shadowsocks_python_init} start
     echo
@@ -1019,7 +1012,7 @@ install_completed_python(){
     echo -e "Your Encryption Method: ${red} ${shadowsockscipher} ${plain}"
 }
 
-install_completed_r(){
+install_completed_r() {
     clear
     ${shadowsocks_r_init} start
     echo
@@ -1032,7 +1025,7 @@ install_completed_r(){
     echo -e "Your Encryption Method: ${red} ${shadowsockscipher} ${plain}"
 }
 
-install_completed_go(){
+install_completed_go() {
     clear
     ${shadowsocks_go_init} start
     echo
@@ -1043,7 +1036,7 @@ install_completed_go(){
     echo -e "Your Encryption Method: ${red} ${shadowsockscipher} ${plain}"
 }
 
-install_completed_libev(){
+install_completed_libev() {
     clear
     ldconfig
     ${shadowsocks_libev_init} start
@@ -1053,12 +1046,12 @@ install_completed_libev(){
     echo -e "Your Server Port      : ${red} ${shadowsocksport} ${plain}"
     echo -e "Your Password         : ${red} ${shadowsockspwd} ${plain}"
     if [ "$(command -v obfs-server)" ]; then
-    echo -e "Your obfs             : ${red} ${shadowsocklibev_obfs} ${plain}"
+        echo -e "Your obfs             : ${red} ${shadowsocklibev_obfs} ${plain}"
     fi
     echo -e "Your Encryption Method: ${red} ${shadowsockscipher} ${plain}"
 }
 
-qr_generate_python(){
+qr_generate_python() {
     if [ "$(command -v qrencode)" ]; then
         local tmp=$(echo -n "${shadowsockscipher}:${shadowsockspwd}@$(get_ip):${shadowsocksport}" | base64 -w0)
         local qr_code="ss://${tmp}"
@@ -1071,7 +1064,7 @@ qr_generate_python(){
     fi
 }
 
-qr_generate_r(){
+qr_generate_r() {
     if [ "$(command -v qrencode)" ]; then
         local tmp1=$(echo -n "${shadowsockspwd}" | base64 -w0 | sed 's/=//g;s/\//_/g;s/+/-/g')
         local tmp2=$(echo -n "$(get_ip):${shadowsocksport}:${shadowsockprotocol}:${shadowsockscipher}:${shadowsockobfs}:${tmp1}/?obfsparam=" | base64 -w0)
@@ -1085,7 +1078,7 @@ qr_generate_r(){
     fi
 }
 
-qr_generate_go(){
+qr_generate_go() {
     if [ "$(command -v qrencode)" ]; then
         local tmp=$(echo -n "${shadowsockscipher}:${shadowsockspwd}@$(get_ip):${shadowsocksport}" | base64 -w0)
         local qr_code="ss://${tmp}"
@@ -1098,7 +1091,7 @@ qr_generate_go(){
     fi
 }
 
-qr_generate_libev(){
+qr_generate_libev() {
     if [ "$(command -v qrencode)" ]; then
         local tmp=$(echo -n "${shadowsockscipher}:${shadowsockspwd}@$(get_ip):${shadowsocksport}" | base64 -w0)
         local qr_code="ss://${tmp}"
@@ -1111,14 +1104,14 @@ qr_generate_libev(){
     fi
 }
 
-install_main(){
+install_main() {
     install_libsodium
     if ! ldconfig -p | grep -wq "/usr/lib"; then
-        echo "/usr/lib" > /etc/ld.so.conf.d/lib.conf
+        echo "/usr/lib" >/etc/ld.so.conf.d/lib.conf
     fi
     ldconfig
 
-    if   [ "${selected}" == "1" ]; then
+    if [ "${selected}" == "1" ]; then
         install_shadowsocks_python
         install_completed_python
         qr_generate_python
@@ -1143,7 +1136,7 @@ install_main(){
     echo
 }
 
-install_cleanup(){
+install_cleanup() {
     cd ${cur_dir}
     rm -rf simple-obfs
     rm -rf ${libsodium_file} ${libsodium_file}.tar.gz
@@ -1154,7 +1147,7 @@ install_cleanup(){
     rm -rf ${shadowsocks_libev_file} ${shadowsocks_libev_file}.tar.gz
 }
 
-install_shadowsocks(){
+install_shadowsocks() {
     disable_selinux
     install_select
     install_prepare
@@ -1168,12 +1161,12 @@ install_shadowsocks(){
     install_cleanup
 }
 
-uninstall_shadowsocks_python(){
+uninstall_shadowsocks_python() {
     printf "Are you sure uninstall ${red}${software[0]}${plain}? [y/n]\n"
     read -p "(default: n):" answer
     [ -z ${answer} ] && answer="n"
     if [ "${answer}" == "y" ] || [ "${answer}" == "Y" ]; then
-        ${shadowsocks_python_init} status > /dev/null 2>&1
+        ${shadowsocks_python_init} status >/dev/null 2>&1
         if [ $? -eq 0 ]; then
             ${shadowsocks_python_init} stop
         fi
@@ -1199,12 +1192,12 @@ uninstall_shadowsocks_python(){
     fi
 }
 
-uninstall_shadowsocks_r(){
+uninstall_shadowsocks_r() {
     printf "Are you sure uninstall ${red}${software[1]}${plain}? [y/n]\n"
     read -p "(default: n):" answer
     [ -z ${answer} ] && answer="n"
     if [ "${answer}" == "y" ] || [ "${answer}" == "Y" ]; then
-        ${shadowsocks_r_init} status > /dev/null 2>&1
+        ${shadowsocks_r_init} status >/dev/null 2>&1
         if [ $? -eq 0 ]; then
             ${shadowsocks_r_init} stop
         fi
@@ -1226,12 +1219,12 @@ uninstall_shadowsocks_r(){
     fi
 }
 
-uninstall_shadowsocks_go(){
+uninstall_shadowsocks_go() {
     printf "Are you sure uninstall ${red}${software[2]}${plain}? [y/n]\n"
     read -p "(default: n):" answer
     [ -z ${answer} ] && answer="n"
     if [ "${answer}" == "y" ] || [ "${answer}" == "Y" ]; then
-        ${shadowsocks_go_init} status > /dev/null 2>&1
+        ${shadowsocks_go_init} status >/dev/null 2>&1
         if [ $? -eq 0 ]; then
             ${shadowsocks_go_init} stop
         fi
@@ -1252,12 +1245,12 @@ uninstall_shadowsocks_go(){
     fi
 }
 
-uninstall_shadowsocks_libev(){
+uninstall_shadowsocks_libev() {
     printf "Are you sure uninstall ${red}${software[3]}${plain}? [y/n]\n"
     read -p "(default: n):" answer
     [ -z ${answer} ] && answer="n"
     if [ "${answer}" == "y" ] || [ "${answer}" == "Y" ]; then
-        ${shadowsocks_libev_init} status > /dev/null 2>&1
+        ${shadowsocks_libev_init} status >/dev/null 2>&1
         if [ $? -eq 0 ]; then
             ${shadowsocks_libev_init} stop
         fi
@@ -1297,33 +1290,32 @@ uninstall_shadowsocks_libev(){
     fi
 }
 
-uninstall_shadowsocks(){
-    while true
-    do
-    echo  "Which Shadowsocks server you want to uninstall?"
-    for ((i=1;i<=${#software[@]};i++ )); do
-        hint="${software[$i-1]}"
-        echo -e "${green}${i}${plain}) ${hint}"
-    done
-    read -p "Please enter a number [1-4]:" un_select
-    case "${un_select}" in
-        1|2|3|4)
-        echo
-        echo "You choose = ${software[${un_select}-1]}"
-        echo
-        break
-        ;;
+uninstall_shadowsocks() {
+    while true; do
+        echo "Which Shadowsocks server you want to uninstall?"
+        for ((i = 1; i <= ${#software[@]}; i++)); do
+            hint="${software[$i - 1]}"
+            echo -e "${green}${i}${plain}) ${hint}"
+        done
+        read -p "Please enter a number [1-4]:" un_select
+        case "${un_select}" in
+        1 | 2 | 3 | 4)
+            echo
+            echo "You choose = ${software[${un_select} - 1]}"
+            echo
+            break
+            ;;
         *)
-        echo -e "[${red}Error${plain}] Please only enter a number [1-4]"
-        ;;
-    esac
+            echo -e "[${red}Error${plain}] Please only enter a number [1-4]"
+            ;;
+        esac
     done
 
-    if   [ "${un_select}" == "1" ]; then
+    if [ "${un_select}" == "1" ]; then
         if [ -f ${shadowsocks_python_init} ]; then
             uninstall_shadowsocks_python
         else
-            echo -e "[${red}Error${plain}] ${software[${un_select}-1]} not installed, please check it and try again."
+            echo -e "[${red}Error${plain}] ${software[${un_select} - 1]} not installed, please check it and try again."
             echo
             exit 1
         fi
@@ -1331,7 +1323,7 @@ uninstall_shadowsocks(){
         if [ -f ${shadowsocks_r_init} ]; then
             uninstall_shadowsocks_r
         else
-            echo -e "[${red}Error${plain}] ${software[${un_select}-1]} not installed, please check it and try again."
+            echo -e "[${red}Error${plain}] ${software[${un_select} - 1]} not installed, please check it and try again."
             echo
             exit 1
         fi
@@ -1339,7 +1331,7 @@ uninstall_shadowsocks(){
         if [ -f ${shadowsocks_go_init} ]; then
             uninstall_shadowsocks_go
         else
-            echo -e "[${red}Error${plain}] ${software[${un_select}-1]} not installed, please check it and try again."
+            echo -e "[${red}Error${plain}] ${software[${un_select} - 1]} not installed, please check it and try again."
             echo
             exit 1
         fi
@@ -1347,10 +1339,72 @@ uninstall_shadowsocks(){
         if [ -f ${shadowsocks_libev_init} ]; then
             uninstall_shadowsocks_libev
         else
-            echo -e "[${red}Error${plain}] ${software[${un_select}-1]} not installed, please check it and try again."
+            echo -e "[${red}Error${plain}] ${software[${un_select} - 1]} not installed, please check it and try again."
             echo
             exit 1
         fi
+    fi
+}
+
+upgrade_shadowsocks() {
+    printf "Are you sure upgrade ${green}${software[3]}${plain}? [y/n]\n"
+    read -p "（default: n)：" answer_upgrade
+    [ -z ${answer_upgrade} ] && answer_upgrade="n"
+    if [ "${answer_upgrade}" == "Y" ] || [ "${answer_upgrade}" == "y" ]; then
+        if [[ -f ${shadowsocks_python_init} || -f ${shadowsocks_go_init} || -f ${shadowsocks_r_init} ]]; then
+            echo
+            echo -e "[${red}Warning${plain}] Only support for shadowsocks_libev !"
+            echo
+            exit 1
+        elif [ -f ${shadowsocks_libev_init} ]; then
+            if [ ! "$(command -v ss-local)" ]; then
+                echo
+                echo -e "[${red}Warning${plain}] You don't install shadowsocks-libev actually..."
+                echo
+                exit 1
+            else
+                current_local_version=$(ss-local --help | grep shadowsocks | cut -d' ' -f2)
+            fi
+            get_libev_ver
+            current_libev_ver=$(echo ${libev_ver} | sed -e 's/^[a-zA-Z]//g')
+            echo
+            echo -e "[${green}Info${plain}] Current Shadowsocks Server Version: v${current_local_version}"
+            echo
+            if [[ "${current_libev_ver}" == "${current_local_version}" ]]; then
+                echo
+                echo "Already updated to latest version !"
+                echo
+                exit 1
+            fi
+            uninstall_shadowsocks_libev
+            if [ "${answer}" == "Y" ] || [ "${answer}" == "y" ]; then
+                disable_selinux
+                selected=4
+                echo
+                echo "You will upgrade ${software[${seleted} - 1]}"
+                echo
+                install_prepare
+                install_dependencies
+                download_files
+                config_shadowsocks
+                install_shadowsocks_libev
+                install_shadowsocks_libev_obfs
+                install_completed_libev
+                qr_generate_libev
+                install_cleanup
+            else
+                exit 1
+            fi
+        else
+            echo
+            echo -e "[${red}Warning${plain}] Don't exist shadowsocks server !"
+            echo
+            exit 1
+        fi
+    else
+        echo
+        echo -e "[${green}Info${plain}] ${software[3]} upgrade cancelled, nothing to do..."
+        echo
     fi
 }
 
@@ -1358,11 +1412,11 @@ uninstall_shadowsocks(){
 action=$1
 [ -z $1 ] && action=install
 case "${action}" in
-    install|uninstall)
-        ${action}_shadowsocks
-        ;;
-    *)
-        echo "Arguments error! [${action}]"
-        echo "Usage: $(basename $0) [install|uninstall]"
-        ;;
+install | uninstall | upgrade)
+    ${action}_shadowsocks
+    ;;
+*)
+    echo "Arguments error! [${action}]"
+    echo "Usage: $(basename $0) [install|uninstall|upgrade]"
+    ;;
 esac
