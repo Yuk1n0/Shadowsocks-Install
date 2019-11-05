@@ -597,7 +597,7 @@ install_select() {
             echo
             echo "You choose = ${software[${selected} - 1]}"
             if [ "${selected}" == "4" ]; then
-                echo -e "Current Shadowsocks_libev Version:${libev_ver}"
+                echo -e "Current official Shadowsocks-libev Version:${libev_ver}"
             fi
             echo
             break
@@ -1347,8 +1347,9 @@ uninstall_shadowsocks() {
 }
 
 upgrade_shadowsocks() {
-    printf "Are you sure upgrade ${green}${software[3]}${plain}? [y/n]\n"
-    read -p "（default: n)：" answer_upgrade
+    echo
+    printf "Are you sure upgrade ${green}${software[3]}${plain} ? [y/n]"
+    read -p " (default: n) : " answer_upgrade
     [ -z ${answer_upgrade} ] && answer_upgrade="n"
     if [ "${answer_upgrade}" == "Y" ] || [ "${answer_upgrade}" == "y" ]; then
         if [[ -f ${shadowsocks_python_init} || -f ${shadowsocks_go_init} || -f ${shadowsocks_r_init} ]]; then
@@ -1368,11 +1369,10 @@ upgrade_shadowsocks() {
             get_libev_ver
             current_libev_ver=$(echo ${libev_ver} | sed -e 's/^[a-zA-Z]//g')
             echo
-            echo -e "[${green}Info${plain}] Current Shadowsocks Server Version: v${current_local_version}"
-            echo
+            echo -e "[${green}Info${plain}] Current official Shadowsocks-libev Version: v${current_local_version}"
             if [[ "${current_libev_ver}" == "${current_local_version}" ]]; then
                 echo
-                echo "Already updated to latest version !"
+                echo -e "[${green}Info${plain}] Already updated to latest version !"
                 echo
                 exit 1
             fi
