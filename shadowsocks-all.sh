@@ -597,7 +597,7 @@ install_select() {
             echo
             echo "You choose = ${software[${selected} - 1]}"
             if [ "${selected}" == "4" ]; then
-                echo -e "Current official Shadowsocks-libev Version:${libev_ver}"
+                echo -e "[${green}Info${plain}] Current official Shadowsocks-libev Version:${libev_ver}"
             fi
             echo
             break
@@ -1260,7 +1260,9 @@ uninstall_shadowsocks_libev() {
         elif check_sys packageManager apt; then
             update-rc.d -f ${service_name} remove
         fi
-        rm -fr $(dirname ${shadowsocks_libev_config})
+        if [ "${answer_upgrade}" != "y" ] || [ "${answer_upgrade}" != "Y" ]; then
+            rm -fr $(dirname ${shadowsocks_libev_config})
+        fi
         rm -f /usr/local/bin/ss-local
         rm -f /usr/local/bin/ss-tunnel
         rm -f /usr/local/bin/ss-server
@@ -1383,12 +1385,20 @@ upgrade_shadowsocks() {
                 echo
                 echo "You will upgrade ${software[${seleted} - 1]}"
                 echo
-                install_prepare
-                install_dependencies
-                download_files
-                config_shadowsocks
-                install_shadowsocks_libev
-                install_shadowsocks_libev_obfs
+                shadowsockspwd=$(cat /etc/shadowsocks-libev/config.json | grep password | cut -d\" -f4)
+                shadowsocksport=$(cat /etc/shadowsocks-libev/config.json | grep server_port | cut -d ',' -f1 | cut -d ':' -f2)
+                shadowsockscipher=$(cat /etc/shadowsocks-libev/config.json | grep method | cut -d\" -f4)
+                if [ -f /usr/local/bin/obfs-server ]; then
+                    install_dependencies
+                    download_files
+                    install_shadowsocks_libev
+                else
+                    install_prepare_libev_obfs
+                    install_dependencies
+                    download_files
+                    install_shadowsocks_libev
+                    install_shadowsocks_libev_obfs
+                fi
                 install_completed_libev
                 qr_generate_libev
                 install_cleanup
