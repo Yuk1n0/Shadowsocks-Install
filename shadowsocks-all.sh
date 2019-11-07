@@ -5,6 +5,7 @@ export PATH
 # Auto install Shadowsocks Server (all version)
 #
 # Copyright (C) 2016-2019 Teddysun <i@teddysun.com> Licensed: GPLv3
+# Copyright (C) 2019 Yuk1n0
 #
 # System Required:  CentOS 6+, Debian7+, Ubuntu12+
 #
