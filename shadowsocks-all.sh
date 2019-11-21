@@ -198,6 +198,7 @@ check_sys() {
     fi
 }
 
+# autoconf_version
 version_ge() {
     test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1"
 }
@@ -206,6 +207,7 @@ version_gt() {
     test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1"
 }
 
+# config_shadowsocks
 check_kernel_version() {
     local kernel_version=$(uname -r | cut -d- -f1)
     if version_gt ${kernel_version} 3.7.0; then
@@ -215,6 +217,7 @@ check_kernel_version() {
     fi
 }
 
+# config_shadowsocks
 check_kernel_headers() {
     if check_sys packageManager yum; then
         if rpm -qa | grep -q headers-$(uname -r); then
@@ -232,6 +235,7 @@ check_kernel_headers() {
     return 1
 }
 
+# centosversion
 getversion() {
     if [[ -s /etc/redhat-release ]]; then
         grep -oE "[0-9.]+" /etc/redhat-release
@@ -290,12 +294,14 @@ get_libev_ver() {
     [ -z ${libev_ver} ] && echo -e "[${red}Error${plain}] Get shadowsocks-libev latest version failed" && exit 1
 }
 
+# debianversion
 get_opsy() {
     [ -f /etc/redhat-release ] && awk '{print ($1,$3~/^[0-9]/?$3:$4)}' /etc/redhat-release && return
     [ -f /etc/os-release ] && awk -F'[= "]' '/PRETTY_NAME/{print $3,$4,$5}' /etc/os-release && return
     [ -f /etc/lsb-release ] && awk -F'[="]+' '/DESCRIPTION/{print $2}' /etc/lsb-release && return
 }
 
+# shadowsocks-go
 is_64bit() {
     if [ $(getconf WORD_BIT) = '32' ] && [ $(getconf LONG_BIT) = '64' ]; then
         return 0
