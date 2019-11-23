@@ -1497,16 +1497,18 @@ upgrade_shadowsocks() {
                 shadowsockspwd=$(cat /etc/shadowsocks-libev/config.json | grep password | cut -d\" -f4)
                 shadowsocksport=$(cat /etc/shadowsocks-libev/config.json | grep server_port | cut -d ',' -f1 | cut -d ':' -f2)
                 shadowsockscipher=$(cat /etc/shadowsocks-libev/config.json | grep method | cut -d\" -f4)
-                if [ -f /usr/local/bin/obfs-server ]; then
+                if [ -f /usr/local/bin/obfs-server ] || [ -f /usr/local/bin/v2ray-plugin ]; then
                     install_dependencies
                     download_files
                     install_shadowsocks_libev
                 else
                     install_prepare_libev_obfs
+                    install_prepare_domain
                     install_dependencies
                     download_files
                     install_shadowsocks_libev
                     install_shadowsocks_libev_obfs
+                    install_shadowsocks_libev_v2ray_plugin
                 fi
                 install_completed_libev
                 qr_generate_libev
