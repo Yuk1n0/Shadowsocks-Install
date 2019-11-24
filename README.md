@@ -5,7 +5,7 @@
 
 ## How to install server:
 ``` bash
-wget --no-check-certificate -O shadowsocks-all.sh https://raw.githubusercontent.com/Yuk1n0/Shadowsocks-Install/master/shadowsocks-all.sh
+wget --no-check-certificate https://raw.githubusercontent.com/Yuk1n0/Shadowsocks-Install/master/shadowsocks-all.sh
 chmod +x shadowsocks-all.sh
 ./shadowsocks-all.sh 2>&1 | tee shadowsocks-all.log
 ```
@@ -13,7 +13,7 @@ chmod +x shadowsocks-all.sh
 ``` bash
 ./shadowsocks-all.sh uninstall
 ```
-**How to upgrade server (only support libev version now)**
+**How to upgrade server (only support shadowsocks-libev now)**
 ```bash
 ./shadowsocks-all.sh upgrade
 ```

@@ -441,7 +441,6 @@ config_firewall() {
 }
 
 config_shadowsocks() {
-
     if check_kernel_version && check_kernel_headers; then
         fast_open="true"
     else
@@ -785,7 +784,7 @@ install_prepare_obfs() {
 install_prepare_libev_obfs() {
     if autoconf_version || centosversion 6; then
         while true; do
-            echo -e "Do you want install simple-obfs for ${software[${selected} - 1]}? [y/n]"
+            echo -e "Do you want install simple-obfs for ${software[${selected} - 1]} (Not Recommedned) ? [y/n]"
             read -p "(default: n):" libev_obfs
             [ -z "$libev_obfs" ] && libev_obfs=n
             case "${libev_obfs}" in
@@ -832,8 +831,10 @@ install_prepare_libev_obfs() {
 }
 
 install_prepare_domain() {
-    if [ "${libev_obfs}" != "y" ] || [ "${libev_obfs}" != "Y" ]; then
+    if [ "${libev_obfs}" == "n" ] || [ "${libev_obfs}" == "N" ]; then
         while true; do
+            echo -e "[${yellow}Warning${plain}] To use v2ray-plugin, make sure you have at least ONE domain ,or you can buy one at https://www.godaddy.com "
+            echo
             echo -e "Do you want install v2ray-plugin for ${software[${selected} - 1]}? [y/n]"
             read -p "(default: n):" v2ray_plugin
             [ -z "$v2ray_plugin" ] && v2ray_plugin=n
@@ -851,17 +852,18 @@ install_prepare_domain() {
         done
 
         if [ "${v2ray_plugin}" == "y" ] || [ "${v2ray_plugin}" == "Y" ]; then
-            echo -e "Please enter your own domain: "
-            read domain
+            read -p "Please enter your own domain: " domain
             str=$(echo $domain | gawk '/^([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/{print $0}')
             while [ ! -n "${str}" ]; do
-                echo -e "[${red}Error${plain}] Invalid domain, Please try again: "
-                read domain
+                echo -e "[${red}Error${plain}] Invalid domain, Please try again! "
+                read -p "Please enter your own domain: " domain
                 str=$(echo $domain | gawk '/^([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/{print $0}')
             done
             echo -e "Your domain = ${domain}"
             get_cert
         fi
+    else
+        echo -e "[${green}Info${plain}] libev-obfs for ${software[${selected} - 1]} already installed, installation has been skipped"
     fi
 }
 
@@ -874,14 +876,13 @@ get_cert() {
         systemctl enable certbot-renew.timer
         systemctl start certbot-renew.timer
         if [ ! -f /etc/letsencrypt/live/$domain/fullchain.pem ]; then
-            echo -e "[${red}Error${plain}] Failed to get cert! "
+            echo -e "[${red}Error${plain}] Failed to get a cert! "
             exit 1
         fi
     fi
 }
 
 install_prepare() {
-
     if [[ "${selected}" == "1" || "${selected}" == "3" || "${selected}" == "4" ]]; then
         install_prepare_password
         install_prepare_port
@@ -900,7 +901,6 @@ install_prepare() {
     echo
     echo "Press any key to start...or Press Ctrl+C to cancel"
     char=$(get_char)
-
 }
 
 install_libsodium() {
@@ -1080,7 +1080,7 @@ install_shadowsocks_libev_obfs() {
 }
 
 install_shadowsocks_libev_v2ray_plugin() {
-    if [ "${libev_obfs}" != "y" ] || [ "${libev_obfs}" != "Y" ]; then
+    if [ "${libev_obfs}" == "n" ] || [ "${libev_obfs}" == "N" ]; then
         if [ "${v2ray_plugin}" == "y" ] || [ "${v2ray_plugin}" == "Y" ]; then
             if [ -f /usr/local/bin/v2ray-plugin ]; then
                 echo -e "[${green}Info${plain}] V2ray-plugin already installed, skip..."
@@ -1253,7 +1253,7 @@ install_cleanup() {
     rm -rf ${shadowsocks_r_file} ${shadowsocks_r_file}.tar.gz
     rm -rf ${shadowsocks_go_file_64}.gz ${shadowsocks_go_file_32}.gz
     rm -rf ${shadowsocks_libev_file} ${shadowsocks_libev_file}.tar.gz
-    rm -f $v2ray_file
+    rm -rf $v2ray_file
 }
 
 install_shadowsocks() {
@@ -1380,6 +1380,7 @@ uninstall_shadowsocks_libev() {
         rm -f /usr/local/bin/ss-nat
         rm -f /usr/local/bin/obfs-local
         rm -f /usr/local/bin/obfs-server
+        rm -f /usr/local/bin/v2ray-plugin
         rm -f /usr/local/lib/libshadowsocks-libev.a
         rm -f /usr/local/lib/libshadowsocks-libev.la
         rm -f /usr/local/include/shadowsocks.h
@@ -1465,13 +1466,13 @@ upgrade_shadowsocks() {
     if [ "${answer_upgrade}" == "Y" ] || [ "${answer_upgrade}" == "y" ]; then
         if [[ -f ${shadowsocks_python_init} || -f ${shadowsocks_go_init} || -f ${shadowsocks_r_init} ]]; then
             echo
-            echo -e "[${red}Warning${plain}] Only support for shadowsocks_libev !"
+            echo -e "[${red}Error${plain}] Only support for shadowsocks_libev !"
             echo
             exit 1
         elif [ -f ${shadowsocks_libev_init} ]; then
             if [ ! "$(command -v ss-local)" ]; then
                 echo
-                echo -e "[${red}Warning${plain}] You don't install shadowsocks-libev actually..."
+                echo -e "[${red}Error${plain}] You don't install shadowsocks-libev actually..."
                 echo
                 exit 1
             else
@@ -1518,7 +1519,7 @@ upgrade_shadowsocks() {
             fi
         else
             echo
-            echo -e "[${red}Warning${plain}] Don't exist shadowsocks server !"
+            echo -e "[${red}Error${plain}] Don't exist shadowsocks server !"
             echo
             exit 1
         fi
