@@ -1371,6 +1371,9 @@ uninstall_shadowsocks_libev() {
         fi
         if [ "${answer_upgrade}" != "y" ] || [ "${answer_upgrade}" != "Y" ]; then
             rm -fr $(dirname ${shadowsocks_libev_config})
+            rm -f /usr/local/bin/obfs-local
+            rm -f /usr/local/bin/obfs-server
+            rm -f /usr/local/bin/v2ray-plugin
         fi
         rm -f /usr/local/bin/ss-local
         rm -f /usr/local/bin/ss-tunnel
@@ -1378,9 +1381,6 @@ uninstall_shadowsocks_libev() {
         rm -f /usr/local/bin/ss-manager
         rm -f /usr/local/bin/ss-redir
         rm -f /usr/local/bin/ss-nat
-        rm -f /usr/local/bin/obfs-local
-        rm -f /usr/local/bin/obfs-server
-        rm -f /usr/local/bin/v2ray-plugin
         rm -f /usr/local/lib/libshadowsocks-libev.a
         rm -f /usr/local/lib/libshadowsocks-libev.la
         rm -f /usr/local/include/shadowsocks.h
