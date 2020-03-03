@@ -21,36 +21,24 @@ chmod +x shadowsocks-all.sh
 
 **How to start | stop | restart your server**
 
-Shadowsocks-Python：
-/etc/init.d/shadowsocks-python start | stop | restart | status
+Shadowsocks-libev：
+/etc/init.d/shadowsocks-libev start | stop | restart | status
 
 ShadowsocksR：
 /etc/init.d/shadowsocks-r start | stop | restart | status
 
-Shadowsocks-Go：
-/etc/init.d/shadowsocks-go start | stop | restart | status
-
-Shadowsocks-libev：
-/etc/init.d/shadowsocks-libev start | stop | restart | status
-
 ****
 **Configuration Files**
-
-Shadowsocks-Python :
-/etc/shadowsocks-python/config.json
-
-ShadowsocksR ：
-/etc/shadowsocks-r/config.json
-
-Shadowsocks-Go ：
-/etc/shadowsocks-go/config.json
 
 Shadowsocks-libev ：
 /etc/shadowsocks-libev/config.json
 
+ShadowsocksR ：
+/etc/shadowsocks-r/config.json
+
 ****
 
-**Ciphers（Python and libev）:**
+**Ciphers（libev）:**
 aes-256-gcm
 aes-192-gcm
 aes-128-gcm
@@ -64,15 +52,6 @@ camellia-128-cfb
 camellia-192-cfb
 camellia-256-cfb
 chacha20-ietf-poly1305
-chacha20-ietf
-
-**Ciphers（Go）:**
-aes-256-cfb
-aes-192-cfb
-aes-128-cfb
-aes-256-ctr
-aes-192-ctr
-aes-128-ctr
 chacha20-ietf
 
 **ciphers（none means unencrypted，ShadowsocksR）:**
