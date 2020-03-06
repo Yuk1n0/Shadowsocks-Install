@@ -43,8 +43,8 @@ software=(Shadowsocks-libev ShadowsocksR)
 libsodium_file="libsodium-1.0.18"
 libsodium_url="https://github.com/jedisct1/libsodium/releases/download/1.0.18-RELEASE/libsodium-1.0.18.tar.gz"
 
-mbedtls_file="mbedtls-2.16.5"
-mbedtls_url="https://tls.mbed.org/download/mbedtls-2.16.5-gpl.tgz"
+mbedtls_file="mbedtls-2.16.6"
+mbedtls_url="https://tls.mbed.org/download/mbedtls-2.16.6-gpl.tgz"
 
 shadowsocks_libev_init="/etc/init.d/shadowsocks-libev"
 shadowsocks_libev_config="/etc/shadowsocks-libev/config.json"
@@ -534,7 +534,7 @@ install_select() {
             hint="${software[$i - 1]}"
             echo -e "${green}${i}${plain}) ${hint}"
         done
-        read -p "Please enter a number (Default ${software[3]}):" selected
+        read -p "Please enter a number (Default ${software[0]}):" selected
         [ -z "${selected}" ] && selected="1"
         case "${selected}" in
         1 | 2)
@@ -851,7 +851,7 @@ install_shadowsocks_libev() {
         fi
     else
         echo
-        echo -e "[${red}Error${plain}] ${software[3]} install failed."
+        echo -e "[${red}Error${plain}] ${software[0]} install failed."
         install_cleanup
         exit 1
     fi
@@ -934,7 +934,7 @@ install_completed_libev() {
     ldconfig
     ${shadowsocks_libev_init} start
     echo
-    echo -e "Congratulations, ${green}${software[3]}${plain} server install completed!"
+    echo -e "Congratulations, ${green}${software[0]}${plain} server install completed!"
     if [ "$(command -v v2ray-plugin)" ]; then
         echo -e "Your Server IP        : ${red} ${domain} ${plain}"
     else
@@ -1042,7 +1042,7 @@ install_shadowsocks() {
 }
 
 uninstall_shadowsocks_libev() {
-    printf "Are you sure uninstall ${red}${software[3]}${plain}? [y/n]\n"
+    printf "Are you sure uninstall ${red}${software[0]}${plain}? [y/n]\n"
     read -p "(default: n):" answer
     [ -z ${answer} ] && answer="n"
     if [ "${answer}" == "y" ] || [ "${answer}" == "Y" ]; then
@@ -1081,10 +1081,10 @@ uninstall_shadowsocks_libev() {
         rm -f /usr/local/share/man/man8/shadowsocks-libev.8
         rm -fr /usr/local/share/doc/shadowsocks-libev
         rm -f ${shadowsocks_libev_init}
-        echo -e "[${green}Info${plain}] ${software[3]} uninstall success"
+        echo -e "[${green}Info${plain}] ${software[0]} uninstall success"
     else
         echo
-        echo -e "[${green}Info${plain}] ${software[3]} uninstall cancelled, nothing to do..."
+        echo -e "[${green}Info${plain}] ${software[0]} uninstall cancelled, nothing to do..."
         echo
     fi
 }
@@ -1158,7 +1158,7 @@ uninstall_shadowsocks() {
 
 upgrade_shadowsocks() {
     echo
-    printf "Are you sure upgrade ${green}${software[3]}${plain} ? [y/n]"
+    printf "Are you sure upgrade ${green}${software[0]}${plain} ? [y/n]"
     read -p " (default: n) : " answer_upgrade
     [ -z ${answer_upgrade} ] && answer_upgrade="n"
     if [ "${answer_upgrade}" == "Y" ] || [ "${answer_upgrade}" == "y" ]; then
@@ -1223,7 +1223,7 @@ upgrade_shadowsocks() {
         fi
     else
         echo
-        echo -e "[${green}Info${plain}] ${software[3]} upgrade cancelled, nothing to do..."
+        echo -e "[${green}Info${plain}] ${software[0]} upgrade cancelled, nothing to do..."
         echo
     fi
 }
