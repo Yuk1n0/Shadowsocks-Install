@@ -1052,7 +1052,7 @@ upgrade_shadowsocks() {
     read -p " (default: n) : " answer_upgrade
     [ -z ${answer_upgrade} ] && answer_upgrade="n"
     if [ "${answer_upgrade}" == "Y" ] || [ "${answer_upgrade}" == "y" ]; then
-        if [[ -f ${shadowsocks_python_init} || -f ${shadowsocks_go_init} || -f ${shadowsocks_r_init} ]]; then
+        if [ -f ${shadowsocks_r_init} ]; then
             echo
             echo -e "[${red}Error${plain}] Only support for shadowsocks_libev !"
             echo
@@ -1060,7 +1060,7 @@ upgrade_shadowsocks() {
         elif [ -f ${shadowsocks_libev_init} ]; then
             if [ ! "$(command -v ss-local)" ]; then
                 echo
-                echo -e "[${red}Error${plain}] You don't install shadowsocks-libev actually..."
+                echo -e "[${red}Error${plain}] You don't install shadowsocks-libev..."
                 echo
                 exit 1
             else
@@ -1079,7 +1079,7 @@ upgrade_shadowsocks() {
             uninstall_shadowsocks_libev
             if [ "${answer}" == "Y" ] || [ "${answer}" == "y" ]; then
                 disable_selinux
-                selected=4
+                selected=1
                 echo
                 echo "You will upgrade ${software[${seleted} - 1]}"
                 echo
