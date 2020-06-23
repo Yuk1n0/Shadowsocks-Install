@@ -93,7 +93,7 @@ r_ciphers=(
 # Reference URL:
 # https://github.com/shadowsocksr-rm/shadowsocks-rss/blob/master/ssr.md
 # https://github.com/shadowsocksrr/shadowsocksr/commit/a3cf0254508992b7126ab1151df0c2f10bf82680
-# Protocol
+
 protocols=(
     origin
     verify_deflate
@@ -108,7 +108,7 @@ protocols=(
     auth_chain_e
     auth_chain_f
 )
-# obfs
+
 obfs=(
     plain
     http_simple
@@ -120,10 +120,8 @@ obfs=(
     tls1.2_ticket_fastauth
     tls1.2_ticket_fastauth_compatible
 )
-# libev obfuscating
-obfs_libev=(http tls)
+
 # initialization parameter
-libev_obfs=""
 v2ray_plugin=""
 
 disable_selinux() {
@@ -403,22 +401,7 @@ config_shadowsocks() {
             mkdir -p $(dirname ${shadowsocks_libev_config})
         fi
 
-        if [ "${libev_obfs}" == "y" ] || [ "${libev_obfs}" == "Y" ]; then
-            cat >${shadowsocks_libev_config} <<-EOF
-{
-    "server":${server_value},
-    "server_port":${shadowsocksport},
-    "password":"${shadowsockspwd}",
-    "timeout":300,
-    "user":"nobody",
-    "method":"${shadowsockscipher}",
-    "fast_open":${fast_open},
-    "nameserver":"8.8.8.8",
-    "plugin":"obfs-server",
-    "plugin_opts":"obfs=${shadowsocklibev_obfs}"
-}
-EOF
-        elif [ "${v2ray_plugin}" == "y" ] || [ "${v2ray_plugin}" == "Y" ]; then
+        if [ "${v2ray_plugin}" == "y" ] || [ "${v2ray_plugin}" == "Y" ]; then
             cat >/etc/shadowsocks-libev/config.json <<EOF
 {
     "server":${server_value},
@@ -680,89 +663,36 @@ install_prepare_obfs() {
     done
 }
 
-install_prepare_libev_obfs() {
-    if autoconf_version || centosversion 6; then
-        while true; do
-            echo -e "Do you want install simple-obfs for ${software[${selected} - 1]} (Not Recommedned) ? [y/n]"
-            read -p "(default: n):" libev_obfs
-            [ -z "$libev_obfs" ] && libev_obfs=n
-            case "${libev_obfs}" in
-            y | Y | n | N)
-                echo
-                echo "You choose = ${libev_obfs}"
-                echo
-                break
-                ;;
-            *)
-                echo -e "[${red}Error${plain}] Please only enter [y/n]"
-                ;;
-            esac
-        done
-
-        if [ "${libev_obfs}" == "y" ] || [ "${libev_obfs}" == "Y" ]; then
-            while true; do
-                echo -e "Please select obfs for simple-obfs:"
-                for ((i = 1; i <= ${#obfs_libev[@]}; i++)); do
-                    hint="${obfs_libev[$i - 1]}"
-                    echo -e "${green}${i}${plain}) ${hint}"
-                done
-                read -p "Which obfs you'd select(Default: ${obfs_libev[0]}):" r_libev_obfs
-                [ -z "$r_libev_obfs" ] && r_libev_obfs=1
-                expr ${r_libev_obfs} + 1 &>/dev/null
-                if [ $? -ne 0 ]; then
-                    echo -e "[${red}Error${plain}] Please enter a number"
-                    continue
-                fi
-                if [[ "$r_libev_obfs" -lt 1 || "$r_libev_obfs" -gt ${#obfs_libev[@]} ]]; then
-                    echo -e "[${red}Error${plain}] Please enter a number between 1 and ${#obfs_libev[@]}"
-                    continue
-                fi
-                shadowsocklibev_obfs=${obfs_libev[$r_libev_obfs - 1]}
-                echo
-                echo "obfs = ${shadowsocklibev_obfs}"
-                echo
-                break
-            done
-        fi
-    else
-        echo -e "[${green}Info${plain}] autoconf version is less than 2.67, simple-obfs for ${software[${selected} - 1]} installation has been skipped"
-    fi
-}
-
 install_prepare_domain() {
-    if [ "${libev_obfs}" == "n" ] || [ "${libev_obfs}" == "N" ]; then
-        while true; do
-            echo -e "[${yellow}Warning${plain}] To use v2ray-plugin, make sure you have at least ONE domain ,or you can buy one at https://www.godaddy.com "
+    while true; do
+        echo -e "[${yellow}Warning${plain}] To use v2ray-plugin, make sure you have at least ONE domain ,or you can buy one at https://www.godaddy.com "
+        echo
+        echo -e "Do you want install v2ray-plugin for ${software[${selected} - 1]}? [y/n]"
+        read -p "(default: n):" v2ray_plugin
+        [ -z "$v2ray_plugin" ] && v2ray_plugin=n
+        case "${v2ray_plugin}" in
+        y | Y | n | N)
             echo
-            echo -e "Do you want install v2ray-plugin for ${software[${selected} - 1]}? [y/n]"
-            read -p "(default: n):" v2ray_plugin
-            [ -z "$v2ray_plugin" ] && v2ray_plugin=n
-            case "${v2ray_plugin}" in
-            y | Y | n | N)
-                echo
-                echo "You choose = ${v2ray_plugin}"
-                echo
-                break
-                ;;
-            *)
-                echo -e "[${red}Error${plain}] Please only enter [y/n]"
-                ;;
-            esac
-        done
+            echo "You choose = ${v2ray_plugin}"
+            echo
+            break
+            ;;
+        *)
+            echo -e "[${red}Error${plain}] Please only enter [y/n]"
+            ;;
+        esac
+    done
 
-        if [ "${v2ray_plugin}" == "y" ] || [ "${v2ray_plugin}" == "Y" ]; then
+    if [ "${v2ray_plugin}" == "y" ] || [ "${v2ray_plugin}" == "Y" ]; then
+        read -p "Please enter your own domain: " domain
+        str=$(echo $domain | gawk '/^([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/{print $0}')
+        while [ ! -n "${str}" ]; do
+            echo -e "[${red}Error${plain}] Invalid domain, Please try again! "
             read -p "Please enter your own domain: " domain
             str=$(echo $domain | gawk '/^([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/{print $0}')
-            while [ ! -n "${str}" ]; do
-                echo -e "[${red}Error${plain}] Invalid domain, Please try again! "
-                read -p "Please enter your own domain: " domain
-                str=$(echo $domain | gawk '/^([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/{print $0}')
-            done
-            echo -e "Your domain = ${domain}"
-            get_cert
-        fi
-    else
-        echo -e "[${green}Info${plain}] libev-obfs for ${software[${selected} - 1]} already installed, installation has been skipped"
+        done
+        echo -e "Your domain = ${domain}"
+        get_cert
     fi
 }
 
@@ -786,7 +716,6 @@ install_prepare() {
         install_prepare_password
         install_prepare_port
         install_prepare_cipher
-        install_prepare_libev_obfs
         install_prepare_domain
     elif [ "${selected}" == "2" ]; then
         install_prepare_password
@@ -857,6 +786,25 @@ install_shadowsocks_libev() {
     fi
 }
 
+install_shadowsocks_libev_v2ray_plugin() {
+    if [ "${v2ray_plugin}" == "y" ] || [ "${v2ray_plugin}" == "Y" ]; then
+        if [ -f /usr/local/bin/v2ray-plugin ]; then
+            echo -e "[${green}Info${plain}] V2ray-plugin already installed, skip..."
+        else
+            if [ ! -f $v2ray_file ]; then
+                v2ray_url=$(wget -qO- https://api.github.com/repos/shadowsocks/v2ray-plugin/releases/latest | grep linux-amd64 | grep browser_download_url | cut -f4 -d\")
+                wget --no-check-certificate $v2ray_url
+            fi
+            tar xf $v2ray_file
+            mv v2ray-plugin_linux_amd64 /usr/local/bin/v2ray-plugin
+            if [ ! -f /usr/local/bin/v2ray-plugin ]; then
+                echo -e "[${red}Error${plain}] Failed to install v2ray-plugin! "
+                exit 1
+            fi
+        fi
+    fi
+}
+
 install_shadowsocks_r() {
     cd ${cur_dir}
     tar zxf ${shadowsocks_r_file}.tar.gz
@@ -878,57 +826,6 @@ install_shadowsocks_r() {
     fi
 }
 
-install_shadowsocks_libev_obfs() {
-    if [ "${libev_obfs}" == "y" ] || [ "${libev_obfs}" == "Y" ]; then
-        cd ${cur_dir}
-        git clone https://github.com/shadowsocks/simple-obfs.git
-        [ -d simple-obfs ] && cd simple-obfs || echo -e "[${red}Error:${plain}] Failed to git clone simple-obfs."
-        git submodule update --init --recursive
-        if centosversion 6; then
-            if [ ! "$(command -v autoconf268)" ]; then
-                echo -e "[${green}Info${plain}] Starting install autoconf268..."
-                yum install -y autoconf268 >/dev/null 2>&1 || echo -e "[${red}Error:${plain}] Failed to install autoconf268."
-            fi
-            # replace command autoreconf to autoreconf268
-            sed -i 's/autoreconf/autoreconf268/' autogen.sh
-            # replace #include <ev.h> to #include <libev/ev.h>
-            sed -i 's@^#include <ev.h>@#include <libev/ev.h>@' src/local.h
-            sed -i 's@^#include <ev.h>@#include <libev/ev.h>@' src/server.h
-        fi
-        ./autogen.sh
-        ./configure --disable-documentation
-        make
-        make install
-        if [ ! "$(command -v obfs-server)" ]; then
-            echo -e "[${red}Error${plain}] simple-obfs for ${software[${selected} - 1]} install failed."
-            install_cleanup
-            exit 1
-        fi
-        [ -f /usr/local/bin/obfs-server ] && ln -s /usr/local/bin/obfs-server /usr/bin
-    fi
-}
-
-install_shadowsocks_libev_v2ray_plugin() {
-    if [ "${libev_obfs}" == "n" ] || [ "${libev_obfs}" == "N" ]; then
-        if [ "${v2ray_plugin}" == "y" ] || [ "${v2ray_plugin}" == "Y" ]; then
-            if [ -f /usr/local/bin/v2ray-plugin ]; then
-                echo -e "[${green}Info${plain}] V2ray-plugin already installed, skip..."
-            else
-                if [ ! -f $v2ray_file ]; then
-                    v2ray_url=$(wget -qO- https://api.github.com/repos/shadowsocks/v2ray-plugin/releases/latest | grep linux-amd64 | grep browser_download_url | cut -f4 -d\")
-                    wget --no-check-certificate $v2ray_url
-                fi
-                tar xf $v2ray_file
-                mv v2ray-plugin_linux_amd64 /usr/local/bin/v2ray-plugin
-                if [ ! -f /usr/local/bin/v2ray-plugin ]; then
-                    echo -e "[${red}Error${plain}] Failed to install v2ray-plugin! "
-                    exit 1
-                fi
-            fi
-        fi
-    fi
-}
-
 install_completed_libev() {
     clear
     ldconfig
@@ -942,9 +839,6 @@ install_completed_libev() {
     fi
     echo -e "Your Server Port      : ${red} ${shadowsocksport} ${plain}"
     echo -e "Your Password         : ${red} ${shadowsockspwd} ${plain}"
-    if [ "$(command -v obfs-server)" ]; then
-        echo -e "Your obfs             : ${red} ${shadowsocklibev_obfs} ${plain}"
-    fi
     if [ "$(command -v v2ray-plugin)" ]; then
         echo "Your Plugin           :  v2ray-plugin"
         echo "Your Plugin options   :  tls;host=${domain}"
@@ -1002,7 +896,6 @@ install_main() {
     if [ "${selected}" == "1" ]; then
         install_mbedtls
         install_shadowsocks_libev
-        install_shadowsocks_libev_obfs
         install_shadowsocks_libev_v2ray_plugin
         install_completed_libev
         qr_generate_libev
@@ -1019,7 +912,6 @@ install_main() {
 
 install_cleanup() {
     cd ${cur_dir}
-    rm -rf simple-obfs
     rm -rf ${libsodium_file} ${libsodium_file}.tar.gz
     rm -rf ${mbedtls_file} ${mbedtls_file}-gpl.tgz
     rm -rf ${shadowsocks_libev_file} ${shadowsocks_libev_file}.tar.gz
@@ -1058,8 +950,6 @@ uninstall_shadowsocks_libev() {
         fi
         if [ "${answer_upgrade}" != "y" ] || [ "${answer_upgrade}" != "Y" ]; then
             rm -fr $(dirname ${shadowsocks_libev_config})
-            rm -f /usr/local/bin/obfs-local
-            rm -f /usr/local/bin/obfs-server
             rm -f /usr/local/bin/v2ray-plugin
         fi
         rm -f /usr/local/bin/ss-local
@@ -1196,17 +1086,15 @@ upgrade_shadowsocks() {
                 shadowsockspwd=$(cat /etc/shadowsocks-libev/config.json | grep password | cut -d\" -f4)
                 shadowsocksport=$(cat /etc/shadowsocks-libev/config.json | grep server_port | cut -d ',' -f1 | cut -d ':' -f2)
                 shadowsockscipher=$(cat /etc/shadowsocks-libev/config.json | grep method | cut -d\" -f4)
-                if [ -f /usr/local/bin/obfs-server ] || [ -f /usr/local/bin/v2ray-plugin ]; then
+                if [ -f /usr/local/bin/v2ray-plugin ]; then
                     install_dependencies
                     download_files
                     install_shadowsocks_libev
                 else
-                    install_prepare_libev_obfs
                     install_prepare_domain
                     install_dependencies
                     download_files
                     install_shadowsocks_libev
-                    install_shadowsocks_libev_obfs
                     install_shadowsocks_libev_v2ray_plugin
                 fi
                 install_completed_libev
