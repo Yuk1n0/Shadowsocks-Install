@@ -44,7 +44,7 @@ libsodium_file="libsodium-1.0.18"
 libsodium_url="https://github.com/jedisct1/libsodium/releases/download/1.0.18-RELEASE/libsodium-1.0.18.tar.gz"
 
 mbedtls_file="mbedtls-2.16.6"
-mbedtls_url="https://tls.mbed.org/download/mbedtls-2.16.6-gpl.tgz"
+mbedtls_url="https://github.com/ARMmbed/mbedtls/archive/'"$mbedtls_file"'.tar.gz"
 
 shadowsocks_libev_init="/etc/init.d/shadowsocks-libev"
 shadowsocks_libev_config="/etc/shadowsocks-libev/config.json"
@@ -749,9 +749,9 @@ install_libsodium() {
 install_mbedtls() {
     if [ ! -f /usr/lib/libmbedtls.a ]; then
         cd ${cur_dir}
-        download "${mbedtls_file}-gpl.tgz" "${mbedtls_url}"
-        tar xf ${mbedtls_file}-gpl.tgz
-        cd ${mbedtls_file}
+        download "mbedtls-${mbedtls_file}.tar.gz" "${mbedtls_url}"
+        tar zxf mbedtls-${mbedtls_file}.tar.gz
+        cd mbedtls-${mbedtls_file}
         make SHARED=1 CFLAGS=-fPIC
         make DESTDIR=/usr install
         if [ $? -ne 0 ]; then
@@ -913,7 +913,7 @@ install_main() {
 install_cleanup() {
     cd ${cur_dir}
     rm -rf ${libsodium_file} ${libsodium_file}.tar.gz
-    rm -rf ${mbedtls_file} ${mbedtls_file}-gpl.tgz
+    rm -rf mbedtls-${mbedtls_file} mbedtls-${mbedtls_file}.tar.gz
     rm -rf ${shadowsocks_libev_file} ${shadowsocks_libev_file}.tar.gz
     rm -rf ${shadowsocks_r_file} ${shadowsocks_r_file}.tar.gz
     rm -rf $v2ray_file
