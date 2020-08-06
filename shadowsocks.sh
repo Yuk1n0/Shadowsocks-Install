@@ -2,33 +2,23 @@
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 #
-# Auto install Shadowsocks Server (all version)
-#
-# Copyright (C) 2016-2020 Teddysun <i@teddysun.com> Licensed: GPLv3
-# Copyright (C) 2019-2020 M3chD09  <https://m3chd09.github.io> Licensed: MIT
+# Copyright (C) 2016-2020 Teddysun
+# Copyright (C) 2019-2020 M3chD09
 # Copyright (C) 2019-2020 Yuk1n0
+# Distributed under the GPLv3 software license, see the accompanying
+# file COPYING or https://opensource.org/licenses/GPL-3.0.
 #
+# Auto install Shadowsocks Server
 # System Required:  CentOS 6+, Debian7+, Ubuntu12+
 #
 # Reference URL:
-# https://github.com/shadowsocks/shadowsocks
-# https://github.com/shadowsocks/shadowsocks-go
+# https://github.com/shadowsocks/
 # https://github.com/shadowsocks/shadowsocks-libev
+# https://github.com/shadowsocks/v2ray-plugin
 # https://github.com/shadowsocks/shadowsocks-windows
-# https://github.com/shadowsocksr-rm/shadowsocksr
 # https://github.com/shadowsocksrr/shadowsocksr
 # https://github.com/shadowsocksrr/shadowsocksr-csharp
-# https://github.com/shadowsocks/v2ray-plugin
 #
-# Thanks:
-# @clowwindy  <https://twitter.com/clowwindy>
-# @breakwa11  <https://twitter.com/breakwa11>
-# @cyfdecyf   <https://twitter.com/cyfdecyf>
-# @madeye     <https://github.com/madeye>
-# @linusyang  <https://github.com/linusyang>
-# @Akkariiin  <https://github.com/Akkariiin>
-# @teddysun   <https://github.com/teddysun>
-# @M3chD09    <https://github.com/M3chD09>
 
 red='\033[0;31m'
 green='\033[0;32m'
