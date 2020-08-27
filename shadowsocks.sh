@@ -462,7 +462,7 @@ install_dependencies() {
         yum_depends=(
             unzip gzip openssl openssl-devel gcc python python-devel python-setuptools pcre pcre-devel libtool libevent
             autoconf automake make curl curl-devel zlib-devel perl perl-devel cpio expat-devel gettext-devel
-            libev-devel c-ares-devel git qrencode wget asciidoc xmlto rng-tools
+            libev-devel c-ares-devel git qrencode wget asciidoc xmlto rng-tools certbot
         )
         for depend in ${yum_depends[@]}; do
             error_detect_depends "yum -y install ${depend}"
@@ -471,7 +471,7 @@ install_dependencies() {
         apt_depends=(
             gettext build-essential unzip gzip python python-dev python-setuptools curl openssl libssl-dev
             autoconf automake libtool gcc make perl cpio libpcre3 libpcre3-dev zlib1g-dev libev-dev libc-ares-dev
-            git qrencode wget asciidoc xmlto rng-tools
+            git qrencode wget asciidoc xmlto rng-tools gawk certbot
         )
 
         apt-get -y update
@@ -514,7 +514,7 @@ install_select() {
             echo
             echo "You choose = ${software[${selected} - 1]}"
             if [ "${selected}" == "1" ]; then
-                echo -e "[${green}Info${plain}] Current official Shadowsocks-libev Version:${libev_ver}"
+                echo -e "[${green}Info${plain}] Current official Shadowsocks-libev Version: ${libev_ver}"
             fi
             echo
             break
@@ -655,8 +655,7 @@ install_prepare_obfs() {
 
 install_prepare_domain() {
     while true; do
-        echo -e "[${yellow}Warning${plain}] To use v2ray-plugin, make sure you have at least ONE domain ,or you can buy one at https://www.godaddy.com "
-        echo
+        echo -e "[${yellow}Warning${plain}] To use v2ray-plugin, make sure you have at least ONE domain"
         echo -e "Do you want install v2ray-plugin for ${software[${selected} - 1]}? [y/n]"
         read -p "(default: n):" v2ray_plugin
         [ -z "$v2ray_plugin" ] && v2ray_plugin=n
@@ -681,22 +680,29 @@ install_prepare_domain() {
             read -p "Please enter your own domain: " domain
             str=$(echo $domain | gawk '/^([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/{print $0}')
         done
+        echo
         echo -e "Your domain = ${domain}"
+        echo
         get_cert
     fi
+    echo
 }
 
 get_cert() {
     if [ -f /etc/letsencrypt/live/$domain/fullchain.pem ]; then
-        echo -e "[${green}Info${plain}] Cert already got, skip..."
+        echo -e "[${green}Info${plain}] Cert already existed, skip..."
     else
-        yum install -y certbot
         certbot certonly --cert-name $domain -d $domain --standalone --agree-tos --register-unsafely-without-email
-        systemctl enable certbot-renew.timer
-        systemctl start certbot-renew.timer
         if [ ! -f /etc/letsencrypt/live/$domain/fullchain.pem ]; then
             echo -e "[${red}Error${plain}] Failed to get a cert! "
             exit 1
+        fi
+        if check_sys packageManager yum; then
+            systemctl enable certbot-renew.timer
+            systemctl start certbot-renew.timer
+        elif check_sys packageManager apt; then
+            systemctl enable certbot.timer
+            systemctl start certbot.timer
         fi
     fi
 }
@@ -714,7 +720,6 @@ install_prepare() {
         install_prepare_protocol
         install_prepare_obfs
     fi
-    echo
     echo "Press any key to start...or Press Ctrl+C to cancel"
     char=$(get_char)
 }
@@ -1037,20 +1042,20 @@ uninstall_shadowsocks() {
 }
 
 upgrade_shadowsocks() {
-    echo
-    printf "Are you sure upgrade ${green}${software[0]}${plain} ? [y/n]"
-    read -p " (default: n) : " answer_upgrade
+    clear
+    echo -e "Upgrade ${green}${software[0]}${plain} ? [y/n]"
+    read -p "(default: n) : " answer_upgrade
     [ -z ${answer_upgrade} ] && answer_upgrade="n"
     if [ "${answer_upgrade}" == "Y" ] || [ "${answer_upgrade}" == "y" ]; then
         if [ -f ${shadowsocks_r_init} ]; then
             echo
-            echo -e "[${red}Error${plain}] Only support for shadowsocks_libev !"
+            echo -e "[${red}Error${plain}] Only support shadowsocks-libev !"
             echo
             exit 1
         elif [ -f ${shadowsocks_libev_init} ]; then
             if [ ! "$(command -v ss-local)" ]; then
                 echo
-                echo -e "[${red}Error${plain}] You don't install shadowsocks-libev..."
+                echo -e "[${red}Error${plain}] Shadowsocks-libev not installed..."
                 echo
                 exit 1
             else
@@ -1095,7 +1100,7 @@ upgrade_shadowsocks() {
             fi
         else
             echo
-            echo -e "[${red}Error${plain}] Don't exist shadowsocks server !"
+            echo -e "[${red}Error${plain}] Shadowsocks-libev server doesn't exist !"
             echo
             exit 1
         fi
