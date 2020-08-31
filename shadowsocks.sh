@@ -30,11 +30,11 @@ plain='\033[0m'
 cur_dir=$(pwd)
 software=(Shadowsocks-libev ShadowsocksR)
 
-libsodium_file="libsodium-1.0.18"
-libsodium_url="https://github.com/jedisct1/libsodium/releases/download/1.0.18-RELEASE/libsodium-1.0.18.tar.gz"
+libsodium_file='libsodium-1.0.18'
+libsodium_url='https://github.com/jedisct1/libsodium/releases/download/1.0.18-RELEASE/libsodium-1.0.18.tar.gz'
 
-mbedtls_file="mbedtls-2.23.0"
-mbedtls_url="https://github.com/ARMmbed/mbedtls/archive/'"$mbedtls_file"'.tar.gz"
+mbedtls_file='mbedtls-2.23.0'
+mbedtls_url='https://github.com/ARMmbed/mbedtls/archive/'"$mbedtls_file"'.tar.gz'
 
 shadowsocks_libev_init="/etc/init.d/shadowsocks-libev"
 shadowsocks_libev_config="/etc/shadowsocks-libev/config.json"
