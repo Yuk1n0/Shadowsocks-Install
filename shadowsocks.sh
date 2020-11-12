@@ -856,7 +856,12 @@ install_completed_r() {
 
 qr_generate_libev() {
     if [ "$(command -v qrencode)" ]; then
-        local tmp=$(echo -n "${shadowsockscipher}:${shadowsockspwd}@$(get_ip):${shadowsocksport}" | base64 -w0)
+        if [ "$(command -v v2ray-plugin)" ]; then
+            local tmp1=$(echo -n "${shadowsockscipher}:${shadowsockspwd}" | base64 -w0)
+            local tmp=$(echo -n "${tmp1}@$(get_ip):${shadowsocksport}/?plugin=v2ray-plugin%3btls%3bhost%3d${domain}")
+        else
+            local tmp=$(echo -n "${shadowsockscipher}:${shadowsockspwd}@$(get_ip):${shadowsocksport}" | base64 -w0)
+        fi
         local qr_code="ss://${tmp}"
         echo
         echo "Your QR Code: (For Shadowsocks Windows, OSX, Android and iOS clients)"
