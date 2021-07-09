@@ -74,10 +74,10 @@ r_ciphers=(
     aes-128-ctr
     chacha20-ietf
 )
+
 # Reference URL:
 # https://github.com/shadowsocksr-rm/shadowsocks-rss/blob/master/ssr.md
 # https://github.com/shadowsocksrr/shadowsocksr/commit/a3cf0254508992b7126ab1151df0c2f10bf82680
-
 protocols=(
     origin
     verify_deflate
@@ -280,17 +280,6 @@ download_files() {
     fi
 }
 
-error_detect_depends() {
-    local command=$1
-    local depend=$(echo "${command}" | awk '{print $4}')
-    echo -e "[${green}Info${plain}] Starting to install package ${depend}"
-    ${command} >/dev/null 2>&1
-    if [ $? -ne 0 ]; then
-        echo -e "[${red}Error${plain}] Failed to install ${red}${depend}${plain}"
-        exit 1
-    fi
-}
-
 config_firewall() {
     if centosversion 6; then
         /etc/init.d/iptables status >/dev/null 2>&1
@@ -371,6 +360,17 @@ EOF
     fi
 }
 
+error_detect_depends() {
+    local command=$1
+    local depend=$(echo "${command}" | awk '{print $4}')
+    echo -e "[${green}Info${plain}] Starting to install package ${depend}"
+    ${command} >/dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo -e "[${red}Error${plain}] Failed to install ${red}${depend}${plain}"
+        exit 1
+    fi
+}
+
 install_dependencies() {
     if check_sys packageManager yum; then
         echo -e "[${green}Info${plain}] Checking the EPEL repository..."
@@ -437,7 +437,7 @@ install_select() {
             echo
             echo "You choose = ${software[${selected} - 1]}"
             if [ "${selected}" == "1" ]; then
-                echo -e "[${green}Info${plain}] Current official Shadowsocks-libev Version: ${libev_ver}"
+                echo -e "[${green}Info${plain}] Shadowsocks-libev Version: ${libev_ver}"
             fi
             echo
             break
@@ -910,7 +910,7 @@ upgrade_shadowsocks() {
             get_libev_ver
             current_libev_ver=$(echo ${libev_ver} | sed -e 's/^[a-zA-Z]//g')
             echo
-            echo -e "[${green}Info${plain}] Current official Shadowsocks-libev Version: v${current_local_version}"
+            echo -e "[${green}Info${plain}] Shadowsocks-libev Version: v${current_local_version}"
             if [[ "${current_libev_ver}" == "${current_local_version}" ]]; then
                 echo
                 echo -e "[${green}Info${plain}] Already updated to latest version !"
