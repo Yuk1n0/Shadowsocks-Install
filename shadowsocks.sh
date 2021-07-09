@@ -12,7 +12,6 @@ export PATH
 # Reference URL:
 # https://github.com/shadowsocks/
 # https://github.com/shadowsocks/shadowsocks-libev
-# https://github.com/shadowsocks/v2ray-plugin
 # https://github.com/shadowsocksrr/shadowsocksr
 #
 
@@ -36,7 +35,6 @@ shadowsocks_libev_init="/etc/init.d/shadowsocks-libev"
 shadowsocks_libev_config="/etc/shadowsocks-libev/config.json"
 shadowsocks_libev_centos="https://raw.githubusercontent.com/Yuk1n0/Shadowsocks-Install/master/shadowsocks-libev-centos"
 shadowsocks_libev_debian="https://raw.githubusercontent.com/Yuk1n0/Shadowsocks-Install/master/shadowsocks-libev-debian"
-v2ray_file=$(wget -qO- https://api.github.com/repos/shadowsocks/v2ray-plugin/releases/latest | grep linux-amd64 | grep name | cut -f4 -d\")
 
 shadowsocks_r_file="shadowsocksr-3.2.2"
 shadowsocks_r_url="https://github.com/shadowsocksrr/shadowsocksr/archive/3.2.2.tar.gz"
@@ -106,9 +104,6 @@ obfs=(
     tls1.2_ticket_fastauth
     tls1.2_ticket_fastauth_compatible
 )
-
-# initialization parameter
-v2ray_plugin=""
 
 disable_selinux() {
     if [ -s /etc/selinux/config ] && grep 'SELINUX=enforcing' /etc/selinux/config; then
@@ -318,9 +313,6 @@ config_firewall() {
             default_zone=$(firewall-cmd --get-default-zone)
             firewall-cmd --permanent --zone=${default_zone} --add-port=${shadowsocksport}/tcp
             firewall-cmd --permanent --zone=${default_zone} --add-port=${shadowsocksport}/udp
-            firewall-cmd --permanent --zone=${default_zone} --add-service=http
-            firewall-cmd --permanent --zone=${default_zone} --add-port=443/tcp
-            firewall-cmd --permanent --zone=${default_zone} --add-port=443/udp
             firewall-cmd --reload
         else
             echo -e "[${yellow}Warning${plain}] firewalld looks like not running or not installed, please enable port ${shadowsocksport} manually if necessary."
@@ -339,23 +331,7 @@ config_shadowsocks() {
             mkdir -p $(dirname ${shadowsocks_libev_config})
         fi
 
-        if [ "${v2ray_plugin}" == "y" ] || [ "${v2ray_plugin}" == "Y" ]; then
-            cat >/etc/shadowsocks-libev/config.json <<EOF
-{
-    "server":${server_value},
-    "server_port":443,
-    "password":"${shadowsockspwd}",
-    "timeout":300,
-    "user":"nobody",
-    "method":"aes-256-gcm",
-    "fast_open":false,
-    "nameserver":"8.8.8.8",
-    "plugin":"v2ray-plugin",
-    "plugin_opts":"server;tls;cert=/etc/letsencrypt/live/$domain/fullchain.pem;key=/etc/letsencrypt/live/$domain/privkey.pem;host=$domain;loglevel=none"
-}
-EOF
-        else
-            cat >${shadowsocks_libev_config} <<-EOF
+        cat >${shadowsocks_libev_config} <<-EOF
 {
     "server":${server_value},
     "server_port":${shadowsocksport},
@@ -367,7 +343,6 @@ EOF
     "nameserver":"8.8.8.8"
 }
 EOF
-        fi
 
     elif [ "${selected}" == "2" ]; then
         if [ ! -d "$(dirname ${shadowsocks_r_config})" ]; then
@@ -410,7 +385,7 @@ install_dependencies() {
         yum_depends=(
             unzip gzip openssl openssl-devel gcc python python-devel python-setuptools pcre pcre-devel libtool libevent
             autoconf automake make curl curl-devel zlib-devel perl perl-devel cpio expat-devel gettext-devel
-            libev-devel c-ares-devel git qrencode wget asciidoc xmlto rng-tools certbot
+            libev-devel c-ares-devel git qrencode wget asciidoc xmlto rng-tools
         )
         for depend in ${yum_depends[@]}; do
             error_detect_depends "yum -y install ${depend}"
@@ -419,7 +394,7 @@ install_dependencies() {
         apt_depends=(
             gettext build-essential unzip gzip python python-dev python-setuptools curl openssl libssl-dev
             autoconf automake libtool gcc make perl cpio libpcre3 libpcre3-dev zlib1g-dev libev-dev libc-ares-dev
-            git qrencode wget asciidoc xmlto rng-tools gawk certbot
+            git qrencode wget asciidoc xmlto rng-tools gawk
         )
 
         apt-get -y update
@@ -601,59 +576,6 @@ install_prepare_obfs() {
     done
 }
 
-install_prepare_domain() {
-    while true; do
-        echo -e "[${yellow}Warning${plain}] To use v2ray-plugin, make sure you have at least ONE domain"
-        echo -e "Do you want install v2ray-plugin for ${software[${selected} - 1]}? [y/n]"
-        read -p "(default: n):" v2ray_plugin
-        [ -z "$v2ray_plugin" ] && v2ray_plugin=n
-        case "${v2ray_plugin}" in
-        y | Y | n | N)
-            echo
-            echo "You choose = ${v2ray_plugin}"
-            echo
-            break
-            ;;
-        *)
-            echo -e "[${red}Error${plain}] Please only enter [y/n]"
-            ;;
-        esac
-    done
-
-    if [ "${v2ray_plugin}" == "y" ] || [ "${v2ray_plugin}" == "Y" ]; then
-        read -p "Please enter your own domain: " domain
-        str=$(echo $domain | gawk '/^([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/{print $0}')
-        while [ ! -n "${str}" ]; do
-            echo -e "[${red}Error${plain}] Invalid domain, Please try again! "
-            read -p "Please enter your own domain: " domain
-            str=$(echo $domain | gawk '/^([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/{print $0}')
-        done
-        echo
-        echo -e "Your domain = ${domain}"
-        echo
-        get_cert
-    fi
-    echo
-}
-
-get_cert() {
-    if [ -f /etc/letsencrypt/live/$domain/fullchain.pem ]; then
-        echo -e "[${green}Info${plain}] Cert already existed, skip..."
-    else
-        certbot certonly --cert-name $domain -d $domain --standalone --agree-tos --register-unsafely-without-email
-        if [ ! -f /etc/letsencrypt/live/$domain/fullchain.pem ]; then
-            echo -e "[${red}Error${plain}] Failed to get a cert! "
-            exit 1
-        fi
-        if check_sys packageManager yum; then
-            systemctl enable certbot-renew.timer
-            systemctl start certbot-renew.timer
-        elif check_sys packageManager apt; then
-            systemctl enable certbot.timer
-            systemctl start certbot.timer
-        fi
-    fi
-}
 get_char() {
     SAVEDSTTY=$(stty -g)
     stty -echo
@@ -669,7 +591,6 @@ install_prepare() {
         install_prepare_password
         install_prepare_port
         install_prepare_cipher
-        install_prepare_domain
     elif [ "${selected}" == "2" ]; then
         install_prepare_password
         install_prepare_port
@@ -738,25 +659,6 @@ install_shadowsocks_libev() {
     fi
 }
 
-install_shadowsocks_libev_v2ray_plugin() {
-    if [ "${v2ray_plugin}" == "y" ] || [ "${v2ray_plugin}" == "Y" ]; then
-        if [ -f /usr/local/bin/v2ray-plugin ]; then
-            echo -e "[${green}Info${plain}] V2ray-plugin already installed, skip..."
-        else
-            if [ ! -f $v2ray_file ]; then
-                v2ray_url=$(wget -qO- https://api.github.com/repos/shadowsocks/v2ray-plugin/releases/latest | grep linux-amd64 | grep browser_download_url | cut -f4 -d\")
-                wget --no-check-certificate $v2ray_url
-            fi
-            tar xf $v2ray_file
-            mv v2ray-plugin_linux_amd64 /usr/local/bin/v2ray-plugin
-            if [ ! -f /usr/local/bin/v2ray-plugin ]; then
-                echo -e "[${red}Error${plain}] Failed to install v2ray-plugin! "
-                exit 1
-            fi
-        fi
-    fi
-}
-
 install_shadowsocks_r() {
     cd ${cur_dir}
     tar zxf ${shadowsocks_r_file}.tar.gz
@@ -784,17 +686,9 @@ install_completed_libev() {
     ${shadowsocks_libev_init} start
     echo
     echo -e "Congratulations, ${green}${software[0]}${plain} server install completed!"
-    if [ "$(command -v v2ray-plugin)" ]; then
-        echo -e "Your Server IP        : ${red} ${domain} ${plain}"
-    else
-        echo -e "Your Server IP        : ${red} $(get_ip) ${plain}"
-    fi
+    echo -e "Your Server IP        : ${red} $(get_ip) ${plain}"
     echo -e "Your Server Port      : ${red} ${shadowsocksport} ${plain}"
     echo -e "Your Password         : ${red} ${shadowsockspwd} ${plain}"
-    if [ "$(command -v v2ray-plugin)" ]; then
-        echo "Your Plugin           :  v2ray-plugin"
-        echo "Your Plugin options   :  tls;host=${domain}"
-    fi
     echo -e "Your Encryption Method: ${red} ${shadowsockscipher} ${plain}"
 }
 
@@ -813,12 +707,7 @@ install_completed_r() {
 
 qr_generate_libev() {
     if [ "$(command -v qrencode)" ]; then
-        if [ "$(command -v v2ray-plugin)" ]; then
-            local tmp1=$(echo -n "${shadowsockscipher}:${shadowsockspwd}" | base64 -w0)
-            local tmp=$(echo -n "${tmp1}@$(get_ip):${shadowsocksport}/?plugin=v2ray-plugin%3btls%3bhost%3d${domain}")
-        else
-            local tmp=$(echo -n "${shadowsockscipher}:${shadowsockspwd}@$(get_ip):${shadowsocksport}" | base64 -w0)
-        fi
+        local tmp=$(echo -n "${shadowsockscipher}:${shadowsockspwd}@$(get_ip):${shadowsocksport}" | base64 -w0)
         local qr_code="ss://${tmp}"
         echo
         echo "Your QR Code: (For Shadowsocks Windows, OSX, Android and iOS clients)"
@@ -853,7 +742,6 @@ install_main() {
     if [ "${selected}" == "1" ]; then
         install_mbedtls
         install_shadowsocks_libev
-        install_shadowsocks_libev_v2ray_plugin
         install_completed_libev
         qr_generate_libev
     elif [ "${selected}" == "2" ]; then
@@ -873,7 +761,6 @@ install_cleanup() {
     rm -rf mbedtls-${mbedtls_file} mbedtls-${mbedtls_file}.tar.gz
     rm -rf ${shadowsocks_libev_file} ${shadowsocks_libev_file}.tar.gz
     rm -rf ${shadowsocks_r_file} ${shadowsocks_r_file}.tar.gz
-    rm -rf $v2ray_file
 }
 
 install_shadowsocks() {
@@ -905,10 +792,6 @@ uninstall_shadowsocks_libev() {
         elif check_sys packageManager apt; then
             update-rc.d -f ${service_name} remove
         fi
-        if [ "${answer_upgrade}" != "y" ] || [ "${answer_upgrade}" != "Y" ]; then
-            rm -fr $(dirname ${shadowsocks_libev_config})
-            rm -f /usr/local/bin/v2ray-plugin
-        fi
         rm -f /usr/local/bin/ss-local
         rm -f /usr/local/bin/ss-server
         rm -f /usr/local/bin/ss-tunnel
@@ -927,7 +810,7 @@ uninstall_shadowsocks_libev() {
         rm -f /usr/local/share/man/man1/ss-nat.1
         rm -f /usr/local/share/man/man8/shadowsocks-libev.8
         rm -rf /usr/local/share/doc/shadowsocks-libev
-        rm -rf /etc/shadowsocks-libev
+        rm -rf $(dirname ${shadowsocks_libev_config})
         rm -f ${shadowsocks_libev_init}
         echo -e "[${green}Info${plain}] ${software[0]} uninstall success"
     else
@@ -1044,17 +927,9 @@ upgrade_shadowsocks() {
                 shadowsockspwd=$(cat /etc/shadowsocks-libev/config.json | grep password | cut -d\" -f4)
                 shadowsocksport=$(cat /etc/shadowsocks-libev/config.json | grep server_port | cut -d ',' -f1 | cut -d ':' -f2)
                 shadowsockscipher=$(cat /etc/shadowsocks-libev/config.json | grep method | cut -d\" -f4)
-                if [ -f /usr/local/bin/v2ray-plugin ]; then
-                    install_dependencies
-                    download_files
-                    install_shadowsocks_libev
-                else
-                    install_prepare_domain
-                    install_dependencies
-                    download_files
-                    install_shadowsocks_libev
-                    install_shadowsocks_libev_v2ray_plugin
-                fi
+                install_dependencies
+                download_files
+                install_shadowsocks_libev
                 install_completed_libev
                 qr_generate_libev
                 install_cleanup
