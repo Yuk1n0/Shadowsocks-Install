@@ -167,38 +167,6 @@ version_ge() {
     test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1"
 }
 
-version_gt() {
-    test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1"
-}
-
-# config_shadowsocks
-check_kernel_version() {
-    local kernel_version=$(uname -r | cut -d- -f1)
-    if version_gt ${kernel_version} 3.7.0; then
-        return 0
-    else
-        return 1
-    fi
-}
-
-# config_shadowsocks
-check_kernel_headers() {
-    if check_sys packageManager yum; then
-        if rpm -qa | grep -q headers-$(uname -r); then
-            return 0
-        else
-            return 1
-        fi
-    elif check_sys packageManager apt; then
-        if dpkg -s linux-headers-$(uname -r) >/dev/null 2>&1; then
-            return 0
-        else
-            return 1
-        fi
-    fi
-    return 1
-}
-
 # centosversion
 getversion() {
     if [[ -s /etc/redhat-release ]]; then
@@ -361,12 +329,6 @@ config_firewall() {
 }
 
 config_shadowsocks() {
-    if check_kernel_version && check_kernel_headers; then
-        fast_open="true"
-    else
-        fast_open="false"
-    fi
-
     if [ "${selected}" == "1" ]; then
         local server_value="\"0.0.0.0\""
         if get_ipv6; then
@@ -386,7 +348,7 @@ config_shadowsocks() {
     "timeout":300,
     "user":"nobody",
     "method":"aes-256-gcm",
-    "fast_open":${fast_open},
+    "fast_open":false,
     "nameserver":"8.8.8.8",
     "plugin":"v2ray-plugin",
     "plugin_opts":"server;tls;cert=/etc/letsencrypt/live/$domain/fullchain.pem;key=/etc/letsencrypt/live/$domain/privkey.pem;host=$domain;loglevel=none"
@@ -401,7 +363,7 @@ EOF
     "timeout":300,
     "user":"nobody",
     "method":"${shadowsockscipher}",
-    "fast_open":${fast_open},
+    "fast_open":false,
     "nameserver":"8.8.8.8"
 }
 EOF
@@ -427,7 +389,7 @@ EOF
     "obfs_param":"",
     "redirect":"",
     "dns_ipv6":false,
-    "fast_open":${fast_open},
+    "fast_open":false,
     "workers":1
 }
 EOF
