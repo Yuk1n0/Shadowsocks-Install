@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # chkconfig: 2345 90 10
 # description: A secure socks5 proxy, designed to protect your Internet traffic.
 
@@ -12,15 +12,13 @@
 # Description:       Start or stop the ShadowsocksR server
 ### END INIT INFO
 
-# Author: Teddysun <i@teddysun.com>
-
-NAME=ShadowsocksR
-DAEMON=/usr/local/shadowsocks/server.py
 if [ -f /etc/shadowsocks-r/config.json ]; then
     CONF=/etc/shadowsocks-r/config.json
 elif [ -f /etc/shadowsocks.json ]; then
     CONF=/etc/shadowsocks.json
 fi
+NAME=ShadowsocksR
+DAEMON=/usr/local/shadowsocks/server.py
 RETVAL=0
 
 check_running() {

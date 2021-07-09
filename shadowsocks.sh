@@ -2,9 +2,7 @@
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 #
-# Copyright (C) 2016-2020 Teddysun
-# Copyright (C) 2019-2020 M3chD09
-# Copyright (C) 2019-2020 Yuk1n0
+# Thanks to: Teddysun, M3chD09
 # Distributed under the GPLv3 software license, see the accompanying
 # file COPYING or https://opensource.org/licenses/GPL-3.0.
 #
@@ -15,9 +13,7 @@ export PATH
 # https://github.com/shadowsocks/
 # https://github.com/shadowsocks/shadowsocks-libev
 # https://github.com/shadowsocks/v2ray-plugin
-# https://github.com/shadowsocks/shadowsocks-windows
 # https://github.com/shadowsocksrr/shadowsocksr
-# https://github.com/shadowsocksrr/shadowsocksr-csharp
 #
 
 red='\033[0;31m'
@@ -38,7 +34,7 @@ mbedtls_url='https://github.com/ARMmbed/mbedtls/archive/'"$mbedtls_file"'.tar.gz
 
 shadowsocks_libev_init="/etc/init.d/shadowsocks-libev"
 shadowsocks_libev_config="/etc/shadowsocks-libev/config.json"
-shadowsocks_libev_centos="https://raw.githubusercontent.com/Yuk1n0/Shadowsocks-Install/master/shadowsocks-libev"
+shadowsocks_libev_centos="https://raw.githubusercontent.com/Yuk1n0/Shadowsocks-Install/master/shadowsocks-libev-centos"
 shadowsocks_libev_debian="https://raw.githubusercontent.com/Yuk1n0/Shadowsocks-Install/master/shadowsocks-libev-debian"
 v2ray_file=$(wget -qO- https://api.github.com/repos/shadowsocks/v2ray-plugin/releases/latest | grep linux-amd64 | grep name | cut -f4 -d\")
 
@@ -46,7 +42,7 @@ shadowsocks_r_file="shadowsocksr-3.2.2"
 shadowsocks_r_url="https://github.com/shadowsocksrr/shadowsocksr/archive/3.2.2.tar.gz"
 shadowsocks_r_init="/etc/init.d/shadowsocks-r"
 shadowsocks_r_config="/etc/shadowsocks-r/config.json"
-shadowsocks_r_centos="https://raw.githubusercontent.com/Yuk1n0/Shadowsocks-Install/master/shadowsocksR"
+shadowsocks_r_centos="https://raw.githubusercontent.com/Yuk1n0/Shadowsocks-Install/master/shadowsocksR-centos"
 shadowsocks_r_debian="https://raw.githubusercontent.com/Yuk1n0/Shadowsocks-Install/master/shadowsocksR-debian"
 
 # Stream Ciphers
@@ -131,24 +127,24 @@ check_sys() {
     if [[ -f /etc/redhat-release ]]; then
         release="centos"
         systemPackage="yum"
+    elif grep -Eqi "centos|red hat|redhat" /etc/issue; then
+        release="centos"
+        systemPackage="yum"
+    elif grep -Eqi "centos|red hat|redhat" /proc/version; then
+        release="centos"
+        systemPackage="yum"
     elif grep -Eqi "debian|raspbian" /etc/issue; then
+        release="debian"
+        systemPackage="apt"
+    elif grep -Eqi "debian|raspbian" /proc/version; then
         release="debian"
         systemPackage="apt"
     elif grep -Eqi "ubuntu" /etc/issue; then
         release="ubuntu"
         systemPackage="apt"
-    elif grep -Eqi "centos|red hat|redhat" /etc/issue; then
-        release="centos"
-        systemPackage="yum"
-    elif grep -Eqi "debian|raspbian" /proc/version; then
-        release="debian"
-        systemPackage="apt"
     elif grep -Eqi "ubuntu" /proc/version; then
         release="ubuntu"
         systemPackage="apt"
-    elif grep -Eqi "centos|red hat|redhat" /proc/version; then
-        release="centos"
-        systemPackage="yum"
     fi
 
     if [[ "${checkType}" == "sysRelease" ]]; then
@@ -227,6 +223,28 @@ centosversion() {
     fi
 }
 
+# debianversion
+get_opsy() {
+    [ -f /etc/redhat-release ] && awk '{print ($1,$3~/^[0-9]/?$3:$4)}' /etc/redhat-release && return
+    [ -f /etc/os-release ] && awk -F'[= "]' '/PRETTY_NAME/{print $3,$4,$5}' /etc/os-release && return
+    [ -f /etc/lsb-release ] && awk -F'[="]+' '/DESCRIPTION/{print $2}' /etc/lsb-release && return
+}
+
+debianversion() {
+    if check_sys sysRelease debian; then
+        local version=$(get_opsy)
+        local code=${1}
+        local main_ver=$(echo ${version} | sed 's/[^0-9]//g')
+        if [ "${main_ver}" == "${code}" ]; then
+            return 0
+        else
+            return 1
+        fi
+    else
+        return 1
+    fi
+}
+
 autoconf_version() {
     if [ ! "$(command -v autoconf)" ]; then
         echo -e "[${green}Info${plain}] Starting install package autoconf"
@@ -260,28 +278,6 @@ get_ipv6() {
 get_libev_ver() {
     libev_ver=$(wget --no-check-certificate -qO- https://api.github.com/repos/shadowsocks/shadowsocks-libev/releases/latest | grep 'tag_name' | cut -d\" -f4)
     [ -z ${libev_ver} ] && echo -e "[${red}Error${plain}] Get shadowsocks-libev latest version failed" && exit 1
-}
-
-# debianversion
-get_opsy() {
-    [ -f /etc/redhat-release ] && awk '{print ($1,$3~/^[0-9]/?$3:$4)}' /etc/redhat-release && return
-    [ -f /etc/os-release ] && awk -F'[= "]' '/PRETTY_NAME/{print $3,$4,$5}' /etc/os-release && return
-    [ -f /etc/lsb-release ] && awk -F'[="]+' '/DESCRIPTION/{print $2}' /etc/lsb-release && return
-}
-
-debianversion() {
-    if check_sys sysRelease debian; then
-        local version=$(get_opsy)
-        local code=${1}
-        local main_ver=$(echo ${version} | sed 's/[^0-9]//g')
-        if [ "${main_ver}" == "${code}" ]; then
-            return 0
-        else
-            return 1
-        fi
-    else
-        return 1
-    fi
 }
 
 download() {
@@ -319,16 +315,6 @@ download_files() {
             download "${shadowsocks_r_init}" "${shadowsocks_r_debian}"
         fi
     fi
-}
-
-get_char() {
-    SAVEDSTTY=$(stty -g)
-    stty -echo
-    stty cbreak
-    dd if=/dev/tty bs=1 count=1 2>/dev/null
-    stty -raw
-    stty echo
-    stty $SAVEDSTTY
 }
 
 error_detect_depends() {
@@ -706,6 +692,15 @@ get_cert() {
         fi
     fi
 }
+get_char() {
+    SAVEDSTTY=$(stty -g)
+    stty -echo
+    stty cbreak
+    dd if=/dev/tty bs=1 count=1 2>/dev/null
+    stty -raw
+    stty echo
+    stty $SAVEDSTTY
+}
 
 install_prepare() {
     if [ "${selected}" == "1" ]; then
@@ -953,23 +948,24 @@ uninstall_shadowsocks_libev() {
             rm -f /usr/local/bin/v2ray-plugin
         fi
         rm -f /usr/local/bin/ss-local
-        rm -f /usr/local/bin/ss-tunnel
         rm -f /usr/local/bin/ss-server
+        rm -f /usr/local/bin/ss-tunnel
         rm -f /usr/local/bin/ss-manager
         rm -f /usr/local/bin/ss-redir
         rm -f /usr/local/bin/ss-nat
+        rm -f /usr/local/include/shadowsocks.h
         rm -f /usr/local/lib/libshadowsocks-libev.a
         rm -f /usr/local/lib/libshadowsocks-libev.la
-        rm -f /usr/local/include/shadowsocks.h
         rm -f /usr/local/lib/pkgconfig/shadowsocks-libev.pc
         rm -f /usr/local/share/man/man1/ss-local.1
-        rm -f /usr/local/share/man/man1/ss-tunnel.1
         rm -f /usr/local/share/man/man1/ss-server.1
+        rm -f /usr/local/share/man/man1/ss-tunnel.1
         rm -f /usr/local/share/man/man1/ss-manager.1
         rm -f /usr/local/share/man/man1/ss-redir.1
         rm -f /usr/local/share/man/man1/ss-nat.1
         rm -f /usr/local/share/man/man8/shadowsocks-libev.8
-        rm -fr /usr/local/share/doc/shadowsocks-libev
+        rm -rf /usr/local/share/doc/shadowsocks-libev
+        rm -rf /etc/shadowsocks-libev
         rm -f ${shadowsocks_libev_init}
         echo -e "[${green}Info${plain}] ${software[0]} uninstall success"
     else

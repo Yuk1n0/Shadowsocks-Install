@@ -12,7 +12,6 @@
 # Description:       Start or stop the Shadowsocks-libev server
 ### END INIT INFO
 
-# Author: Teddysun <i@teddysun.com>
 if [ -f /usr/local/bin/ss-server ]; then
     DAEMON=/usr/local/bin/ss-server
 elif [ -f /usr/bin/ss-server ]; then
