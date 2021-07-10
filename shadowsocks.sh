@@ -779,6 +779,48 @@ install_shadowsocks() {
     install_cleanup
 }
 
+uninstall_libsodium() {
+    printf "Are you sure uninstall ${red}${libsodium_file}${plain}? [y/n]\n"
+    read -p "(default: n):" answer
+    [ -z ${answer} ] && answer="n"
+    if [ "${answer}" == "y" ] || [ "${answer}" == "Y" ]; then
+        rm -f /usr/lib64/libsodium.so.23
+        rm -f /usr/lib64/libsodium.a
+        rm -f /usr/lib64/libsodium.la
+        rm -f /usr/lib64/pkgconfig/libsodium.pc
+        rm -f /usr/lib64/libsodium.so.23.3.0
+        rm -f /usr/lib64/libsodium.so
+        rm -rf /usr/include/sodium
+        rm -f /usr/include/sodium.h
+        ldconfig
+        echo -e "[${green}Info${plain}] ${libsodium_file} uninstall success"
+    else
+        echo
+        echo -e "[${green}Info${plain}] ${libsodium_file} uninstall cancelled, nothing to do..."
+        echo
+    fi
+}
+
+uninstall_mbedtls() {
+    printf "Are you sure uninstall ${red}${mbedtls_file}${plain}? [y/n]\n"
+    read -p "(default: n):" answer
+    [ -z ${answer} ] && answer="n"
+    if [ "${answer}" == "y" ] || [ "${answer}" == "Y" ]; then
+        rm -f /usr/lib/libmbedtls.a
+        rm -f /usr/lib/libmbedtls.so
+        rm -f /usr/lib/libmbedtls.so.13
+        rm -rf /usr/include/mbedtls
+        rm -f /usr/include/mbedtls/mbedtls_config.h
+        rm -f /usr/bin/mbedtls_*
+        ldconfig
+        echo -e "[${green}Info${plain}] ${mbedtls_file} uninstall success"
+    else
+        echo
+        echo -e "[${green}Info${plain}] ${mbedtls_file} uninstall cancelled, nothing to do..."
+        echo
+    fi
+}
+
 uninstall_shadowsocks_libev() {
     printf "Are you sure uninstall ${red}${software[0]}${plain}? [y/n]\n"
     read -p "(default: n):" answer
