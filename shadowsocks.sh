@@ -219,8 +219,8 @@ autoconf_version() {
         if check_sys packageManager yum; then
             yum install -y autoconf >/dev/null 2>&1 || echo -e "[${red}Error:${plain}] Failed to install autoconf"
         elif check_sys packageManager apt; then
-            apt-get -y update >/dev/null 2>&1
-            apt-get -y install autoconf >/dev/null 2>&1 || echo -e "[${red}Error:${plain}] Failed to install autoconf"
+            apt -y update >/dev/null 2>&1
+            apt -y install autoconf >/dev/null 2>&1 || echo -e "[${red}Error:${plain}] Failed to install autoconf"
         fi
     fi
     local autoconf_ver=$(autoconf --version | grep autoconf | grep -oE "[0-9.]+")
@@ -254,7 +254,7 @@ download() {
         echo "${filename} [found]"
     else
         echo "${filename} not found, download now..."
-        wget --no-check-certificate -c -t3 -T60 -O ${1} ${2}
+        wget --no-check-certificate -c -t3 -T60 -O ${1} ${2} >/dev/null 2>&1
         if [ $? -ne 0 ]; then
             echo -e "[${red}Error${plain}] Download ${filename} failed."
             exit 1
@@ -263,7 +263,8 @@ download() {
 }
 
 download_files() {
-    cd ${cur_dir}
+    echo
+    cd ${cur_dir} || exit
     if [ "${selected}" == "1" ]; then
         get_libev_ver
         shadowsocks_libev_file="shadowsocks-libev-$(echo ${libev_ver} | sed -e 's/^[a-zA-Z]//g')"
@@ -422,9 +423,9 @@ install_dependencies() {
             git qrencode wget asciidoc xmlto rng-tools gawk certbot
         )
 
-        apt-get -y update
+        apt -y update
         for depend in ${apt_depends[@]}; do
-            error_detect_depends "apt-get -y install ${depend}"
+            error_detect_depends "apt -y install ${depend}"
         done
     fi
 }
@@ -683,25 +684,33 @@ install_prepare() {
 }
 
 install_libsodium() {
-    if [ ! -f /usr/lib/libsodium.a ]; then
-        cd ${cur_dir}
+    if [ ! -f /usr/lib/libsodium.a ] || [ ! -f /usr/lib64/libsodium.a ]; then
+        echo
+        echo -e "[${green}Info${plain}] ${libsodium_file} start installing."
+        echo
+        cd ${cur_dir} || exit
         download "${libsodium_file}.tar.gz" "${libsodium_url}"
         tar zxf ${libsodium_file}.tar.gz
-        cd ${libsodium_file}
+        cd ${libsodium_file} || exit
         ./configure --prefix=/usr && make && make install
         if [ $? -ne 0 ]; then
             echo -e "[${red}Error${plain}] ${libsodium_file} install failed."
             install_cleanup
             exit 1
         fi
+        echo -e "[${green}Info${plain}] ${libsodium_file} install success!"
     else
+        echo
         echo -e "[${green}Info${plain}] ${libsodium_file} already installed."
     fi
 }
 
 install_mbedtls() {
-    if [ ! -f /usr/lib/libmbedtls.a ]; then
-        cd ${cur_dir}
+    if [ ! -f /usr/lib/libmbedtls.a ] || [ ! -f /usr/lib64/libmbedtls.a ]; then
+        echo
+        echo -e "[${green}Info${plain}] ${mbedtls_file} start installing."
+        echo
+        cd ${cur_dir} || exit
         download "mbedtls-${mbedtls_file}.tar.gz" "${mbedtls_url}"
         tar zxf mbedtls-${mbedtls_file}.tar.gz
         cd mbedtls-${mbedtls_file}
@@ -712,15 +721,20 @@ install_mbedtls() {
             install_cleanup
             exit 1
         fi
+        echo -e "[${green}Info${plain}] ${mbedtls_file} install success!"
     else
+        echo
         echo -e "[${green}Info${plain}] ${mbedtls_file} already installed."
     fi
 }
 
 install_shadowsocks_libev() {
-    cd ${cur_dir}
+    echo
+    echo -e "[${green}Info${plain}] ${software[0]} start installing."
+    echo
+    cd ${cur_dir} || exit
     tar zxf ${shadowsocks_libev_file}.tar.gz
-    cd ${shadowsocks_libev_file}
+    cd ${shadowsocks_libev_file} || exit
     ./configure --disable-documentation && make && make install
     if [ $? -eq 0 ]; then
         chmod +x ${shadowsocks_libev_init}
@@ -759,7 +773,10 @@ install_shadowsocks_libev_v2ray_plugin() {
 }
 
 install_shadowsocks_r() {
-    cd ${cur_dir}
+    echo
+    echo -e "[${green}Info${plain}] ${software[1]} start installing."
+    echo
+    cd ${cur_dir} || exit
     tar zxf ${shadowsocks_r_file}.tar.gz
     mv ${shadowsocks_r_file}/shadowsocks /usr/local/
     if [ -f /usr/local/shadowsocks/server.py ]; then
@@ -849,10 +866,15 @@ install_main() {
     if ! ldconfig -p | grep -wq "/usr/lib"; then
         echo "/usr/lib" >/etc/ld.so.conf.d/lib.conf
     fi
+    if ! ldconfig -p | grep -wq "/usr/lib64"; then
+        echo "/usr/lib64" >>/etc/ld.so.conf.d/lib.conf
+    fi
     ldconfig
 
+    download_files
     if [ "${selected}" == "1" ]; then
         install_mbedtls
+        ldconfig
         install_shadowsocks_libev
         install_shadowsocks_libev_v2ray_plugin
         install_completed_libev
@@ -869,7 +891,7 @@ install_main() {
 }
 
 install_cleanup() {
-    cd ${cur_dir}
+    cd ${cur_dir} || exit
     rm -rf ${libsodium_file} ${libsodium_file}.tar.gz
     rm -rf mbedtls-${mbedtls_file} mbedtls-${mbedtls_file}.tar.gz
     rm -rf ${shadowsocks_libev_file} ${shadowsocks_libev_file}.tar.gz
@@ -882,13 +904,11 @@ install_shadowsocks() {
     install_select
     install_dependencies
     install_prepare
-    download_files
     config_shadowsocks
     if check_sys packageManager yum; then
         config_firewall
     fi
     install_main
-    install_cleanup
 }
 
 uninstall_shadowsocks_libev() {
@@ -1057,7 +1077,6 @@ upgrade_shadowsocks() {
                 fi
                 install_completed_libev
                 qr_generate_libev
-                install_cleanup
             else
                 exit 1
             fi
