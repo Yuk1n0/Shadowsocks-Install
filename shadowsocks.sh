@@ -776,6 +776,7 @@ install_shadowsocks() {
         config_firewall
     fi
     install_main
+    install_cleanup
 }
 
 uninstall_shadowsocks_libev() {
@@ -886,6 +887,7 @@ uninstall_shadowsocks() {
             exit 1
         fi
     fi
+    ldconfig
 }
 
 upgrade_shadowsocks() {
@@ -900,13 +902,13 @@ upgrade_shadowsocks() {
             echo
             exit 1
         elif [ -f ${shadowsocks_libev_init} ]; then
-            if [ ! "$(command -v ss-local)" ]; then
+            if [ ! "$(command -v ss-server)" ]; then
                 echo
                 echo -e "[${red}Error${plain}] Shadowsocks-libev not installed..."
                 echo
                 exit 1
             else
-                current_local_version=$(ss-local --help | grep shadowsocks | cut -d' ' -f2)
+                current_local_version=$(ss-server --help | grep shadowsocks | cut -d' ' -f2)
             fi
             get_libev_ver
             current_libev_ver=$(echo ${libev_ver} | sed -e 's/^[a-zA-Z]//g')
@@ -919,6 +921,7 @@ upgrade_shadowsocks() {
                 exit 1
             fi
             uninstall_shadowsocks_libev
+            ldconfig
             if [ "${answer}" == "Y" ] || [ "${answer}" == "y" ]; then
                 disable_selinux
                 selected=1
@@ -929,6 +932,7 @@ upgrade_shadowsocks() {
                 shadowsocksport=$(cat /etc/shadowsocks-libev/config.json | grep server_port | cut -d ',' -f1 | cut -d ':' -f2)
                 shadowsockscipher=$(cat /etc/shadowsocks-libev/config.json | grep method | cut -d\" -f4)
                 install_dependencies
+                config_shadowsocks
                 download_files
                 install_shadowsocks_libev
                 install_completed_libev
