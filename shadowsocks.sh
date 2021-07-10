@@ -220,122 +220,49 @@ get_libev_ver() {
     [ -z ${libev_ver} ] && echo -e "[${red}Error${plain}] Get shadowsocks-libev latest version failed" && exit 1
 }
 
-download() {
-    local filename=$(basename $1)
-    if [ -f ${1} ]; then
-        echo "${filename} [found]"
+install_check() {
+    if check_sys packageManager yum || check_sys packageManager apt; then
+        if centosversion 5; then
+            return 1
+        fi
+        return 0
     else
-        echo "${filename} not found, download now..."
-        wget --no-check-certificate -c -t3 -T60 -O ${1} ${2} >/dev/null 2>&1
-        if [ $? -ne 0 ]; then
-            echo -e "[${red}Error${plain}] Download ${filename} failed."
-            exit 1
-        fi
+        return 1
     fi
 }
 
-download_files() {
-    echo
-    cd ${cur_dir} || exit
-    if [ "${selected}" == "1" ]; then
-        get_libev_ver
-        shadowsocks_libev_file="shadowsocks-libev-$(echo ${libev_ver} | sed -e 's/^[a-zA-Z]//g')"
-        shadowsocks_libev_url="https://github.com/shadowsocks/shadowsocks-libev/releases/download/${libev_ver}/${shadowsocks_libev_file}.tar.gz"
-
-        download "${shadowsocks_libev_file}.tar.gz" "${shadowsocks_libev_url}"
-        if check_sys packageManager yum; then
-            download "${shadowsocks_libev_init}" "${shadowsocks_libev_centos}"
-        elif check_sys packageManager apt; then
-            download "${shadowsocks_libev_init}" "${shadowsocks_libev_debian}"
-        fi
-    elif [ "${selected}" == "2" ]; then
-        download "${shadowsocks_r_file}.tar.gz" "${shadowsocks_r_url}"
-        if check_sys packageManager yum; then
-            download "${shadowsocks_r_init}" "${shadowsocks_r_centos}"
-        elif check_sys packageManager apt; then
-            download "${shadowsocks_r_init}" "${shadowsocks_r_debian}"
-        fi
+install_select() {
+    if ! install_check; then
+        echo -e "[${red}Error${plain}] Your OS is not supported to run it!"
+        echo "Please change to CentOS 6+/Debian 7+/Ubuntu 12+ and try again."
+        exit 1
     fi
-}
 
-config_firewall() {
-    if centosversion 6; then
-        /etc/init.d/iptables status >/dev/null 2>&1
-        if [ $? -eq 0 ]; then
-            iptables -L -n | grep -i ${shadowsocksport} >/dev/null 2>&1
-            if [ $? -ne 0 ]; then
-                iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport ${shadowsocksport} -j ACCEPT
-                iptables -I INPUT -m state --state NEW -m udp -p udp --dport ${shadowsocksport} -j ACCEPT
-                /etc/init.d/iptables save
-                /etc/init.d/iptables restart
-            else
-                echo -e "[${green}Info${plain}] port ${green}${shadowsocksport}${plain} already be enabled."
+    clear
+    get_libev_ver
+    while true; do
+        echo "Which Shadowsocks server you'd select:"
+        for ((i = 1; i <= ${#software[@]}; i++)); do
+            hint="${software[$i - 1]}"
+            echo -e "${green}${i}${plain}) ${hint}"
+        done
+        read -p "Please enter a number (Default ${software[0]}):" selected
+        [ -z "${selected}" ] && selected="1"
+        case "${selected}" in
+        1 | 2)
+            echo
+            echo "You choose = ${software[${selected} - 1]}"
+            if [ "${selected}" == "1" ]; then
+                echo -e "[${green}Info${plain}] Shadowsocks-libev Version: ${libev_ver}"
             fi
-        else
-            echo -e "[${yellow}Warning${plain}] iptables looks like not running or not installed, please enable port ${shadowsocksport} manually if necessary."
-        fi
-    elif centosversion 7; then
-        systemctl status firewalld >/dev/null 2>&1
-        if [ $? -eq 0 ]; then
-            default_zone=$(firewall-cmd --get-default-zone)
-            firewall-cmd --permanent --zone=${default_zone} --add-port=${shadowsocksport}/tcp
-            firewall-cmd --permanent --zone=${default_zone} --add-port=${shadowsocksport}/udp
-            firewall-cmd --reload
-        else
-            echo -e "[${yellow}Warning${plain}] firewalld looks like not running or not installed, please enable port ${shadowsocksport} manually if necessary."
-        fi
-    fi
-}
-
-config_shadowsocks() {
-    if [ "${selected}" == "1" ]; then
-        local server_value="\"0.0.0.0\""
-        if get_ipv6; then
-            server_value="[\"[::0]\",\"0.0.0.0\"]"
-        fi
-
-        if [ ! -d "$(dirname ${shadowsocks_libev_config})" ]; then
-            mkdir -p $(dirname ${shadowsocks_libev_config})
-        fi
-
-        cat >${shadowsocks_libev_config} <<-EOF
-{
-    "server":${server_value},
-    "server_port":${shadowsocksport},
-    "password":"${shadowsockspwd}",
-    "timeout":300,
-    "user":"nobody",
-    "method":"${shadowsockscipher}",
-    "fast_open":false,
-    "nameserver":"8.8.8.8"
-}
-EOF
-
-    elif [ "${selected}" == "2" ]; then
-        if [ ! -d "$(dirname ${shadowsocks_r_config})" ]; then
-            mkdir -p $(dirname ${shadowsocks_r_config})
-        fi
-        cat >${shadowsocks_r_config} <<-EOF
-{
-    "server":"0.0.0.0",
-    "server_ipv6":"::",
-    "server_port":${shadowsocksport},
-    "local_address":"127.0.0.1",
-    "local_port":1080,
-    "password":"${shadowsockspwd}",
-    "timeout":120,
-    "method":"${shadowsockscipher}",
-    "protocol":"${shadowsockprotocol}",
-    "protocol_param":"",
-    "obfs":"${shadowsockobfs}",
-    "obfs_param":"",
-    "redirect":"",
-    "dns_ipv6":false,
-    "fast_open":false,
-    "workers":1
-}
-EOF
-    fi
+            echo
+            break
+            ;;
+        *)
+            echo -e "[${red}Error${plain}] Please only enter a number [1-2]"
+            ;;
+        esac
+    done
 }
 
 error_detect_depends() {
@@ -380,51 +307,6 @@ install_dependencies() {
             error_detect_depends "apt -y install ${depend}"
         done
     fi
-}
-
-install_check() {
-    if check_sys packageManager yum || check_sys packageManager apt; then
-        if centosversion 5; then
-            return 1
-        fi
-        return 0
-    else
-        return 1
-    fi
-}
-
-install_select() {
-    if ! install_check; then
-        echo -e "[${red}Error${plain}] Your OS is not supported to run it!"
-        echo "Please change to CentOS 6+/Debian 7+/Ubuntu 12+ and try again."
-        exit 1
-    fi
-
-    clear
-    get_libev_ver
-    while true; do
-        echo "Which Shadowsocks server you'd select:"
-        for ((i = 1; i <= ${#software[@]}; i++)); do
-            hint="${software[$i - 1]}"
-            echo -e "${green}${i}${plain}) ${hint}"
-        done
-        read -p "Please enter a number (Default ${software[0]}):" selected
-        [ -z "${selected}" ] && selected="1"
-        case "${selected}" in
-        1 | 2)
-            echo
-            echo "You choose = ${software[${selected} - 1]}"
-            if [ "${selected}" == "1" ]; then
-                echo -e "[${green}Info${plain}] Shadowsocks-libev Version: ${libev_ver}"
-            fi
-            echo
-            break
-            ;;
-        *)
-            echo -e "[${red}Error${plain}] Please only enter a number [1-2]"
-            ;;
-        esac
-    done
 }
 
 install_prepare_password() {
@@ -578,6 +460,124 @@ install_prepare() {
     fi
     echo "Press any key to start...or Press Ctrl+C to cancel"
     char=$(get_char)
+}
+
+config_shadowsocks() {
+    if [ "${selected}" == "1" ]; then
+        local server_value="\"0.0.0.0\""
+        if get_ipv6; then
+            server_value="[\"[::0]\",\"0.0.0.0\"]"
+        fi
+
+        if [ ! -d "$(dirname ${shadowsocks_libev_config})" ]; then
+            mkdir -p $(dirname ${shadowsocks_libev_config})
+        fi
+
+        cat >${shadowsocks_libev_config} <<-EOF
+{
+    "server":${server_value},
+    "server_port":${shadowsocksport},
+    "password":"${shadowsockspwd}",
+    "timeout":300,
+    "user":"nobody",
+    "method":"${shadowsockscipher}",
+    "fast_open":false,
+    "nameserver":"8.8.8.8"
+}
+EOF
+
+    elif [ "${selected}" == "2" ]; then
+        if [ ! -d "$(dirname ${shadowsocks_r_config})" ]; then
+            mkdir -p $(dirname ${shadowsocks_r_config})
+        fi
+        cat >${shadowsocks_r_config} <<-EOF
+{
+    "server":"0.0.0.0",
+    "server_ipv6":"::",
+    "server_port":${shadowsocksport},
+    "local_address":"127.0.0.1",
+    "local_port":1080,
+    "password":"${shadowsockspwd}",
+    "timeout":120,
+    "method":"${shadowsockscipher}",
+    "protocol":"${shadowsockprotocol}",
+    "protocol_param":"",
+    "obfs":"${shadowsockobfs}",
+    "obfs_param":"",
+    "redirect":"",
+    "dns_ipv6":false,
+    "fast_open":false,
+    "workers":1
+}
+EOF
+    fi
+}
+
+config_firewall() {
+    if centosversion 6; then
+        /etc/init.d/iptables status >/dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            iptables -L -n | grep -i ${shadowsocksport} >/dev/null 2>&1
+            if [ $? -ne 0 ]; then
+                iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport ${shadowsocksport} -j ACCEPT
+                iptables -I INPUT -m state --state NEW -m udp -p udp --dport ${shadowsocksport} -j ACCEPT
+                /etc/init.d/iptables save
+                /etc/init.d/iptables restart
+            else
+                echo -e "[${green}Info${plain}] port ${green}${shadowsocksport}${plain} already be enabled."
+            fi
+        else
+            echo -e "[${yellow}Warning${plain}] iptables looks like not running or not installed, please enable port ${shadowsocksport} manually if necessary."
+        fi
+    elif centosversion 7; then
+        systemctl status firewalld >/dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            default_zone=$(firewall-cmd --get-default-zone)
+            firewall-cmd --permanent --zone=${default_zone} --add-port=${shadowsocksport}/tcp
+            firewall-cmd --permanent --zone=${default_zone} --add-port=${shadowsocksport}/udp
+            firewall-cmd --reload
+        else
+            echo -e "[${yellow}Warning${plain}] firewalld looks like not running or not installed, please enable port ${shadowsocksport} manually if necessary."
+        fi
+    fi
+}
+
+download() {
+    local filename=$(basename $1)
+    if [ -f ${1} ]; then
+        echo "${filename} [found]"
+    else
+        echo "${filename} not found, download now..."
+        wget --no-check-certificate -c -t3 -T60 -O ${1} ${2} >/dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            echo -e "[${red}Error${plain}] Download ${filename} failed."
+            exit 1
+        fi
+    fi
+}
+
+download_files() {
+    echo
+    cd ${cur_dir} || exit
+    if [ "${selected}" == "1" ]; then
+        get_libev_ver
+        shadowsocks_libev_file="shadowsocks-libev-$(echo ${libev_ver} | sed -e 's/^[a-zA-Z]//g')"
+        shadowsocks_libev_url="https://github.com/shadowsocks/shadowsocks-libev/releases/download/${libev_ver}/${shadowsocks_libev_file}.tar.gz"
+
+        download "${shadowsocks_libev_file}.tar.gz" "${shadowsocks_libev_url}"
+        if check_sys packageManager yum; then
+            download "${shadowsocks_libev_init}" "${shadowsocks_libev_centos}"
+        elif check_sys packageManager apt; then
+            download "${shadowsocks_libev_init}" "${shadowsocks_libev_debian}"
+        fi
+    elif [ "${selected}" == "2" ]; then
+        download "${shadowsocks_r_file}.tar.gz" "${shadowsocks_r_url}"
+        if check_sys packageManager yum; then
+            download "${shadowsocks_r_init}" "${shadowsocks_r_centos}"
+        elif check_sys packageManager apt; then
+            download "${shadowsocks_r_init}" "${shadowsocks_r_debian}"
+        fi
+    fi
 }
 
 install_libsodium() {
@@ -742,7 +742,6 @@ install_main() {
     fi
     ldconfig
 
-    download_files
     if [ "${selected}" == "1" ]; then
         install_mbedtls
         ldconfig
@@ -774,6 +773,7 @@ install_shadowsocks() {
     install_dependencies
     install_prepare
     config_shadowsocks
+    download_files
     if check_sys packageManager yum; then
         config_firewall
     fi
