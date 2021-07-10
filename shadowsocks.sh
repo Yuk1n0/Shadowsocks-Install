@@ -684,10 +684,12 @@ install_prepare() {
 }
 
 install_libsodium() {
-    if [ ! -f /usr/lib/libsodium.a ] || [ ! -f /usr/lib64/libsodium.a ]; then
+    if [ -f /usr/lib/libsodium.a ] || [ -f /usr/lib64/libsodium.a ]; then
+        echo
+        echo -e "[${green}Info${plain}] ${libsodium_file} already installed."
+    else
         echo
         echo -e "[${green}Info${plain}] ${libsodium_file} start installing."
-        echo
         cd ${cur_dir} || exit
         download "${libsodium_file}.tar.gz" "${libsodium_url}"
         tar zxf ${libsodium_file}.tar.gz
@@ -699,17 +701,16 @@ install_libsodium() {
             exit 1
         fi
         echo -e "[${green}Info${plain}] ${libsodium_file} install success!"
-    else
-        echo
-        echo -e "[${green}Info${plain}] ${libsodium_file} already installed."
     fi
 }
 
 install_mbedtls() {
-    if [ ! -f /usr/lib/libmbedtls.a ] || [ ! -f /usr/lib64/libmbedtls.a ]; then
+    if [ -f /usr/lib/libmbedtls.a ] || [ -f /usr/lib64/libmbedtls.a ]; then
+        echo
+        echo -e "[${green}Info${plain}] ${mbedtls_file} already installed."
+    else
         echo
         echo -e "[${green}Info${plain}] ${mbedtls_file} start installing."
-        echo
         cd ${cur_dir} || exit
         download "mbedtls-${mbedtls_file}.tar.gz" "${mbedtls_url}"
         tar zxf mbedtls-${mbedtls_file}.tar.gz
@@ -722,16 +723,12 @@ install_mbedtls() {
             exit 1
         fi
         echo -e "[${green}Info${plain}] ${mbedtls_file} install success!"
-    else
-        echo
-        echo -e "[${green}Info${plain}] ${mbedtls_file} already installed."
     fi
 }
 
 install_shadowsocks_libev() {
     echo
     echo -e "[${green}Info${plain}] ${software[0]} start installing."
-    echo
     cd ${cur_dir} || exit
     tar zxf ${shadowsocks_libev_file}.tar.gz
     cd ${shadowsocks_libev_file} || exit
@@ -775,7 +772,6 @@ install_shadowsocks_libev_v2ray_plugin() {
 install_shadowsocks_r() {
     echo
     echo -e "[${green}Info${plain}] ${software[1]} start installing."
-    echo
     cd ${cur_dir} || exit
     tar zxf ${shadowsocks_r_file}.tar.gz
     mv ${shadowsocks_r_file}/shadowsocks /usr/local/
