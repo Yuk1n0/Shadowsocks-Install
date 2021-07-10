@@ -481,8 +481,7 @@ config_shadowsocks() {
     "timeout":300,
     "user":"nobody",
     "method":"${shadowsockscipher}",
-    "fast_open":false,
-    "nameserver":"8.8.8.8"
+    "fast_open":false
 }
 EOF
 
@@ -506,8 +505,7 @@ EOF
     "obfs_param":"",
     "redirect":"",
     "dns_ipv6":false,
-    "fast_open":false,
-    "workers":1
+    "fast_open":false
 }
 EOF
     fi
