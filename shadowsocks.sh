@@ -302,7 +302,7 @@ install_dependencies() {
             libc-ares-dev git qrencode
         )
 
-        apt -y update
+        apt -y update >/dev/null 2>&1
         for depend in ${apt_depends[@]}; do
             error_detect_depends "apt -y install ${depend}"
         done
