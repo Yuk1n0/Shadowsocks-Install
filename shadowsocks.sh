@@ -290,7 +290,7 @@ install_dependencies() {
         yum_depends=(
             unzip gzip openssl openssl-devel gcc python python-devel python-setuptools pcre pcre-devel libtool libevent
             autoconf automake make curl curl-devel zlib-devel perl perl-devel cpio expat-devel gettext-devel
-            libev-devel c-ares-devel git qrencode wget asciidoc xmlto rng-tools
+            libev-devel c-ares-devel git qrencode
         )
         for depend in ${yum_depends[@]}; do
             error_detect_depends "yum -y install ${depend}"
@@ -298,8 +298,8 @@ install_dependencies() {
     elif check_sys packageManager apt; then
         apt_depends=(
             gettext build-essential unzip gzip python python-dev python-setuptools curl openssl libssl-dev
-            autoconf automake libtool gcc make perl cpio libpcre3 libpcre3-dev zlib1g-dev libev-dev libc-ares-dev
-            git qrencode wget asciidoc xmlto rng-tools gawk
+            autoconf automake libtool gcc make perl cpio libpcre3 libpcre3-dev zlib1g-dev libev-dev
+            libc-ares-dev git qrencode
         )
 
         apt -y update
