@@ -157,11 +157,6 @@ check_sys() {
     fi
 }
 
-# autoconf_version
-version_ge() {
-    test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1"
-}
-
 # centosversion
 getversion() {
     if [[ -s /etc/redhat-release ]]; then
@@ -203,24 +198,6 @@ debianversion() {
         else
             return 1
         fi
-    else
-        return 1
-    fi
-}
-
-autoconf_version() {
-    if [ ! "$(command -v autoconf)" ]; then
-        echo -e "[${green}Info${plain}] Starting install package autoconf"
-        if check_sys packageManager yum; then
-            yum install -y autoconf >/dev/null 2>&1 || echo -e "[${red}Error:${plain}] Failed to install autoconf"
-        elif check_sys packageManager apt; then
-            apt -y update >/dev/null 2>&1
-            apt -y install autoconf >/dev/null 2>&1 || echo -e "[${red}Error:${plain}] Failed to install autoconf"
-        fi
-    fi
-    local autoconf_ver=$(autoconf --version | grep autoconf | grep -oE "[0-9.]+")
-    if version_ge ${autoconf_ver} 2.67; then
-        return 0
     else
         return 1
     fi
