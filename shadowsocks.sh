@@ -647,49 +647,59 @@ install_mbedtls() {
 }
 
 install_shadowsocks_libev() {
-    echo
-    echo -e "[${green}Info${plain}] ${software[0]} start installing."
-    cd ${cur_dir} || exit
-    tar zxf ${shadowsocks_libev_file}.tar.gz
-    cd ${shadowsocks_libev_file} || exit
-    ./configure --disable-documentation && make && make install
-    if [ $? -eq 0 ]; then
-        chmod +x ${shadowsocks_libev_init}
-        local service_name=$(basename ${shadowsocks_libev_init})
-        if check_sys packageManager yum; then
-            chkconfig --add ${service_name}
-            chkconfig ${service_name} on
-        elif check_sys packageManager apt; then
-            update-rc.d -f ${service_name} defaults
-        fi
+    if [ -f /usr/local/bin/ss-server ] || [ -f /usr/bin/ss-server ]; then
+        echo
+        echo -e "[${green}Info${plain}] ${software[0]} already installed."
     else
         echo
-        echo -e "[${red}Error${plain}] ${software[0]} install failed."
-        install_cleanup
-        exit 1
+        echo -e "[${green}Info${plain}] ${software[0]} start installing."
+        cd ${cur_dir} || exit
+        tar zxf ${shadowsocks_libev_file}.tar.gz
+        cd ${shadowsocks_libev_file} || exit
+        ./configure --disable-documentation && make && make install
+        if [ $? -eq 0 ]; then
+            chmod +x ${shadowsocks_libev_init}
+            local service_name=$(basename ${shadowsocks_libev_init})
+            if check_sys packageManager yum; then
+                chkconfig --add ${service_name}
+                chkconfig ${service_name} on
+            elif check_sys packageManager apt; then
+                update-rc.d -f ${service_name} defaults
+            fi
+        else
+            echo
+            echo -e "[${red}Error${plain}] ${software[0]} install failed."
+            install_cleanup
+            exit 1
+        fi
     fi
 }
 
 install_shadowsocks_r() {
-    echo
-    echo -e "[${green}Info${plain}] ${software[1]} start installing."
-    cd ${cur_dir} || exit
-    tar zxf ${shadowsocks_r_file}.tar.gz
-    mv ${shadowsocks_r_file}/shadowsocks /usr/local/
     if [ -f /usr/local/shadowsocks/server.py ]; then
-        chmod +x ${shadowsocks_r_init}
-        local service_name=$(basename ${shadowsocks_r_init})
-        if check_sys packageManager yum; then
-            chkconfig --add ${service_name}
-            chkconfig ${service_name} on
-        elif check_sys packageManager apt; then
-            update-rc.d -f ${service_name} defaults
-        fi
+        echo
+        echo -e "[${green}Info${plain}] ${software[1]} already installed."
     else
         echo
-        echo -e "[${red}Error${plain}] ${software[1]} install failed."
-        install_cleanup
-        exit 1
+        echo -e "[${green}Info${plain}] ${software[1]} start installing."
+        cd ${cur_dir} || exit
+        tar zxf ${shadowsocks_r_file}.tar.gz
+        mv ${shadowsocks_r_file}/shadowsocks /usr/local/
+        if [ -f /usr/local/shadowsocks/server.py ]; then
+            chmod +x ${shadowsocks_r_init}
+            local service_name=$(basename ${shadowsocks_r_init})
+            if check_sys packageManager yum; then
+                chkconfig --add ${service_name}
+                chkconfig ${service_name} on
+            elif check_sys packageManager apt; then
+                update-rc.d -f ${service_name} defaults
+            fi
+        else
+            echo
+            echo -e "[${red}Error${plain}] ${software[1]} install failed."
+            install_cleanup
+            exit 1
+        fi
     fi
 }
 
