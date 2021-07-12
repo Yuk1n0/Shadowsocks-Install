@@ -10,7 +10,7 @@ export PATH
 # System Required:  CentOS 6+, Debian7+, Ubuntu12+
 #
 # Reference URL:
-# https://github.com/shadowsocks/
+# https://github.com/shadowsocks
 # https://github.com/shadowsocks/shadowsocks-libev
 # https://github.com/shadowsocksrr/shadowsocksr
 #
@@ -84,7 +84,7 @@ r_ciphers=(
 )
 
 # Reference URL:
-# https://github.com/shadowsocksr-rm/shadowsocks-rss/blob/master/ssr.md
+# https://github.com/shadowsocksrr/shadowsocks-rss/blob/master/ssr.md
 # https://github.com/shadowsocksrr/shadowsocksr/commit/a3cf0254508992b7126ab1151df0c2f10bf82680
 protocols=(
     origin
@@ -296,18 +296,18 @@ install_dependencies() {
         echo -e "[${green}Info${plain}] Checking the EPEL repository complete..."
 
         yum_depends=(
-            unzip gzip openssl openssl-devel gcc python python-devel python-setuptools pcre pcre-devel libtool libevent
-            autoconf automake make curl curl-devel zlib-devel perl perl-devel cpio expat-devel gettext-devel
-            libev-devel c-ares-devel git qrencode
+            autoconf automake cpio curl curl-devel gcc git gzip libevent libev-devel libtool make openssl
+            openssl-devel pcre pcre-devel perl perl-devel python python-devel python-setuptools
+            qrencode unzip c-ares-devel expat-devel gettext-devel zlib-devel
         )
         for depend in ${yum_depends[@]}; do
             error_detect_depends "yum -y install ${depend}"
         done
     elif check_sys packageManager apt; then
         apt_depends=(
-            gettext build-essential unzip gzip python python-dev python-setuptools curl openssl libssl-dev
-            autoconf automake libtool gcc make perl cpio libpcre3 libpcre3-dev zlib1g-dev libev-dev
-            libc-ares-dev git qrencode
+            autoconf automake build-essential cpio curl gcc gettext git gzip libpcre3 libpcre3-dev
+            libtool make openssl perl python python-dev python-setuptools qrencode unzip
+            libc-ares-dev libev-dev libssl-dev zlib1g-dev
         )
 
         apt -y update >/dev/null 2>&1
@@ -486,9 +486,9 @@ config_shadowsocks() {
     "server":${server_value},
     "server_port":${shadowsocksport},
     "password":"${shadowsockspwd}",
+    "method":"${shadowsockscipher}",
     "timeout":300,
     "user":"nobody",
-    "method":"${shadowsockscipher}",
     "fast_open":false
 }
 EOF
@@ -505,46 +505,17 @@ EOF
     "local_address":"127.0.0.1",
     "local_port":1080,
     "password":"${shadowsockspwd}",
-    "timeout":120,
     "method":"${shadowsockscipher}",
     "protocol":"${shadowsockprotocol}",
     "protocol_param":"",
     "obfs":"${shadowsockobfs}",
     "obfs_param":"",
+    "timeout":120,
     "redirect":"",
     "dns_ipv6":false,
     "fast_open":false
 }
 EOF
-    fi
-}
-
-config_firewall() {
-    if centosversion 6; then
-        /etc/init.d/iptables status >/dev/null 2>&1
-        if [ $? -eq 0 ]; then
-            iptables -L -n | grep -i ${shadowsocksport} >/dev/null 2>&1
-            if [ $? -ne 0 ]; then
-                iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport ${shadowsocksport} -j ACCEPT
-                iptables -I INPUT -m state --state NEW -m udp -p udp --dport ${shadowsocksport} -j ACCEPT
-                /etc/init.d/iptables save
-                /etc/init.d/iptables restart
-            else
-                echo -e "[${green}Info${plain}] port ${green}${shadowsocksport}${plain} already be enabled."
-            fi
-        else
-            echo -e "[${yellow}Warning${plain}] iptables looks like not running or not installed, please enable port ${shadowsocksport} manually if necessary."
-        fi
-    elif centosversion 7; then
-        systemctl status firewalld >/dev/null 2>&1
-        if [ $? -eq 0 ]; then
-            default_zone=$(firewall-cmd --get-default-zone)
-            firewall-cmd --permanent --zone=${default_zone} --add-port=${shadowsocksport}/tcp
-            firewall-cmd --permanent --zone=${default_zone} --add-port=${shadowsocksport}/udp
-            firewall-cmd --reload
-        else
-            echo -e "[${yellow}Warning${plain}] firewalld looks like not running or not installed, please enable port ${shadowsocksport} manually if necessary."
-        fi
     fi
 }
 
@@ -582,6 +553,36 @@ download_files() {
             download "${shadowsocks_r_init}" "${shadowsocks_r_centos}"
         elif check_sys packageManager apt; then
             download "${shadowsocks_r_init}" "${shadowsocks_r_debian}"
+        fi
+    fi
+}
+
+config_firewall() {
+    if centosversion 6; then
+        /etc/init.d/iptables status >/dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            iptables -L -n | grep -i ${shadowsocksport} >/dev/null 2>&1
+            if [ $? -ne 0 ]; then
+                iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport ${shadowsocksport} -j ACCEPT
+                iptables -I INPUT -m state --state NEW -m udp -p udp --dport ${shadowsocksport} -j ACCEPT
+                /etc/init.d/iptables save
+                /etc/init.d/iptables restart
+            else
+                echo
+                echo -e "[${green}Info${plain}] port ${green}${shadowsocksport}${plain} already be enabled."
+            fi
+        else
+            echo -e "[${yellow}Warning${plain}] iptables looks like not running or not installed, please enable port ${shadowsocksport} manually if necessary."
+        fi
+    elif centosversion 7; then
+        systemctl status firewalld >/dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            default_zone=$(firewall-cmd --get-default-zone)
+            firewall-cmd --permanent --zone=${default_zone} --add-port=${shadowsocksport}/tcp
+            firewall-cmd --permanent --zone=${default_zone} --add-port=${shadowsocksport}/udp
+            firewall-cmd --reload
+        else
+            echo -e "[${yellow}Warning${plain}] firewalld looks like not running or not installed, please enable port ${shadowsocksport} manually if necessary."
         fi
     fi
 }
@@ -981,7 +982,6 @@ upgrade_shadowsocks() {
                 shadowsockspwd=$(cat /etc/shadowsocks-libev/config.json | grep password | cut -d\" -f4)
                 shadowsocksport=$(cat /etc/shadowsocks-libev/config.json | grep server_port | cut -d ',' -f1 | cut -d ':' -f2)
                 shadowsockscipher=$(cat /etc/shadowsocks-libev/config.json | grep method | cut -d\" -f4)
-                install_dependencies
                 config_shadowsocks
                 download_files
                 install_shadowsocks_libev
