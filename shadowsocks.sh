@@ -107,6 +107,8 @@ obfs=(
     http_simple_compatible
     http_post
     http_post_compatible
+    random_head
+    random_head_compatible
     tls1.2_ticket_auth
     tls1.2_ticket_auth_compatible
     tls1.2_ticket_fastauth
